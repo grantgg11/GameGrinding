@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+    This file defines the user interface for the Settings screen in the application.
+    It allows users to update their account information, change their password, and manage encryption settings.
+    The layout features a sidebar for navigation, input fields for user data, and buttons for saving changes.
+ -->
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.effect.GaussianBlur?>
+<?import javafx.scene.effect.InnerShadow?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1280.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.SettingsController">
+   <children>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#faf3f3" height="642.0" layoutX="135.0" layoutY="130.0" stroke="BLACK" strokeType="INSIDE" width="1098.0">
+         <effect>
+            <InnerShadow radius="4.75" width="0.0" />
+         </effect>
+      </Rectangle>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#2e2e2e" height="800.0" stroke="BLACK" strokeType="INSIDE" style="-fx-arc-height: 20px; -fx-arc-width: 20px;" width="1280.0" />
+      <Rectangle arcHeight="25.0" arcWidth="15.0" fill="#43474a" height="794.0" stroke="WHITE" strokeType="INSIDE" strokeWidth="2.0" width="181.0" />
+      <Rectangle arcHeight="15.0" arcWidth="20.0" fill="#e1e1e1" height="86.0" layoutX="182.0" stroke="#b5b5b5" strokeType="INSIDE" strokeWidth="2.0" width="1098.0">
+         <effect>
+            <DropShadow />
+         </effect></Rectangle>
+      <ImageView fitHeight="252.0" fitWidth="289.0" layoutX="-55.0" layoutY="-54.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@/Images/GameGrinding.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="86.0" fitWidth="361.0" layoutX="192.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@/Images/settingsFont.png" />
+         </image>
+      </ImageView>
+      <Rectangle arcHeight="20.0" arcWidth="20.0" fill="#faf3f3" height="242.0" layoutX="198.0" layoutY="102.0" stroke="WHITE" strokeType="INSIDE" strokeWidth="2.0" width="293.0">
+         <effect>
+            <InnerShadow choke="0.08" height="37.86" radius="17.1475" width="32.73" />
+         </effect>
+      </Rectangle>
+      <TextField fx:id="usernameField" layoutX="220.0" layoutY="182.0" prefHeight="25.0" prefWidth="252.0" style="-fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px;">
+         <cursor>
+            <Cursor fx:constant="TEXT" />
+         </cursor>
+         <effect>
+            <DropShadow />
+         </effect>
+      </TextField>
+      <Text fill="#a8a8a8" layoutX="220.0" layoutY="171.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Username">
+         <font>
+            <Font name="System Italic" size="12.0" />
+         </font>
+      </Text>
+      <TextField fx:id="emailField" layoutX="220.0" layoutY="241.0" prefHeight="25.0" prefWidth="252.0" style="-fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px;">
+         <cursor>
+            <Cursor fx:constant="TEXT" />
+         </cursor>
+         <effect>
+            <DropShadow />
+         </effect>
+      </TextField>
+      <Text fill="#a8a8a8" layoutX="219.0" layoutY="229.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Email">
+         <font>
+            <Font name="System Italic" size="12.0" />
+         </font>
+      </Text>
+      <Button fx:id="saveAccountButton" layoutX="281.0" layoutY="293.0" mnemonicParsing="false" onAction="#handleSaveAccount" prefHeight="25.0" prefWidth="128.0" style="-fx-background-color: #0D314B; -fx-background-radius: 10px; -fx-border-color: white; -fx-border-radius: 10px; -fx-border-width: 2px;" text="Save Changes" textFill="WHITE">
+         <effect>
+            <DropShadow />
+         </effect>
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font>
+      </Button>
+      <Rectangle arcHeight="20.0" arcWidth="20.0" fill="#faf3f3" height="366.0" layoutX="509.0" layoutY="101.0" stroke="WHITE" strokeType="INSIDE" strokeWidth="2.0" width="293.0">
+         <effect>
+            <InnerShadow choke="0.08" height="37.86" radius="17.1475" width="32.73" />
+         </effect>
+      </Rectangle>
+      <TextField fx:id="currentPasswordField" layoutX="520.0" layoutY="182.0" prefHeight="25.0" prefWidth="252.0" style="-fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px;">
+         <cursor>
+            <Cursor fx:constant="TEXT" />
+         </cursor>
+         <effect>
+            <DropShadow />
+         </effect>
+      </TextField>
+      <Text fill="#a8a8a8" layoutX="520.0" layoutY="172.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Current Password">
+         <font>
+            <Font name="System Italic" size="12.0" />
+         </font>
+      </Text>
+      <TextField fx:id="currentPasswordField2" layoutX="519.0" layoutY="241.0" prefHeight="25.0" prefWidth="252.0" style="-fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px;">
+         <cursor>
+            <Cursor fx:constant="TEXT" />
+         </cursor>
+         <effect>
+            <DropShadow />
+         </effect>
+      </TextField>
+      <Text fill="#a8a8a8" layoutX="519.0" layoutY="231.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Retype Current Password">
+         <font>
+            <Font name="System Italic" size="12.0" />
+         </font>
+      </Text>
+      <Button fx:id="savePasswordButton" layoutX="592.0" layoutY="412.0" mnemonicParsing="false" onAction="#handleSavePassword" prefHeight="25.0" prefWidth="128.0" style="-fx-background-color: #0D314B; -fx-background-radius: 10px; -fx-border-color: white; -fx-border-radius: 10px; -fx-border-width: 2px;" text="Save Password" textFill="WHITE">
+         <effect>
+            <DropShadow />
+         </effect>
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font>
+      </Button>
+      <Text fill="#a8a8a8" layoutX="519.0" layoutY="290.0" strokeType="OUTSIDE" strokeWidth="0.0" text="New Password">
+         <font>
+            <Font name="System Italic" size="12.0" />
+         </font>
+      </Text>
+      <Text fill="#a8a8a8" layoutX="520.0" layoutY="349.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Confirm New Password">
+         <font>
+            <Font name="System Italic" size="12.0" />
+         </font>
+      </Text>
+      <Rectangle arcHeight="20.0" arcWidth="20.0" fill="#faf3f3" height="642.0" layoutX="816.0" layoutY="101.0" stroke="WHITE" strokeType="INSIDE" strokeWidth="2.0" width="440.0">
+         <effect>
+            <InnerShadow choke="0.08" height="37.86" radius="17.1475" width="32.73" />
+         </effect>
+      </Rectangle>
+      
+      <ScrollPane fitToWidth="true" layoutX="828.0" layoutY="176.0" prefHeight="544.0" prefWidth="410.0" style="-fx-background-color:transparent;">
+    <content>
+        <VBox fx:id="encryptionVBox" spacing="10.0" style="-fx-padding: 15;" />
+    </content>
+	</ScrollPane>
+      <PasswordField fx:id="newPasswordField" layoutX="519.0" layoutY="301.0" prefHeight="25.0" prefWidth="252.0" style="-fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px;">
+        	 <effect>
+            	<DropShadow />
+         	</effect>
+      	</PasswordField>
+      	<PasswordField fx:id="confirmPasswordField" layoutX="519.0" layoutY="359.0" prefHeight="25.0" prefWidth="252.0" style="-fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px;">
+         	<effect>
+            	<DropShadow />
+         	</effect>
+      	</PasswordField>
+      <Rectangle arcHeight="15.0" arcWidth="10.0" fill="#0d314b" height="39.0" layoutX="15.0" layoutY="212.0" stroke="WHITE" strokeType="INSIDE" strokeWidth="2.0" width="154.0">
+         <effect>
+            <GaussianBlur radius="4.81" />
+         </effect></Rectangle>  
+      	<ImageView fitHeight="46.0" fitWidth="30.0" layoutX="23.0" layoutY="159.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@/Images/collectionOff.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="46.0" fitWidth="30.0" layoutX="23.0" layoutY="218.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@/Images/settingsOn.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="46.0" fitWidth="30.0" layoutX="23.0" layoutY="265.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@/Images/helpOff.png" />
+         </image>
+      </ImageView>
+           <Button fx:id="settingsButton" layoutX="8.0" layoutY="217.0" mnemonicParsing="false" onAction="#handleSettingsButton" prefHeight="31.0" prefWidth="165.0" style="-fx-background-color: transparent;" text="                     Settings" textFill="WHITE">
+         <font>
+            <Font name="System Bold" size="15.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+      <Button fx:id="helpButton" layoutX="10.0" layoutY="264.0" mnemonicParsing="false" onAction="#handleHelpButton" prefHeight="31.0" prefWidth="165.0" style="-fx-background-color: transparent;" text="                        Help" textAlignment="RIGHT" textFill="WHITE">
+         <font>
+            <Font name="System Bold" size="15.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+            <Button fx:id="collectionPageButton" alignment="CENTER_RIGHT" layoutX="22.0" layoutY="150.0" mnemonicParsing="false" onAction="#handleCollectionPageButton" prefHeight="48.0" prefWidth="145.0" style="-fx-background-color: transparent;" text="Game&#10;Collection" textAlignment="RIGHT" textFill="WHITE">
+         <font>
+            <Font name="System Bold" size="15.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+      <Line endX="147.0" layoutX="21.0" layoutY="141.0" startX="-5.5" stroke="WHITE" />
+      <Line endX="100.0" layoutX="67.0" layoutY="313.0" startX="-46.0" stroke="WHITE" />
+      <Button fx:id="reportsButton" layoutX="592.0" layoutY="722.0" managed="true" mnemonicParsing="false" onAction="#handleReportButton" prefHeight="25.0" prefWidth="128.0" style="-fx-background-color: #0D314B; -fx-background-radius: 10px; -fx-border-color: white; -fx-border-radius: 10px; -fx-border-width: 2px;" text="Generate Reports" textFill="WHITE" visible="true">
+         <effect>
+            <DropShadow />
+         </effect>
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font>
+      </Button>
+      <ImageView fitHeight="150.0" fitWidth="200.0" layoutX="209.0" layoutY="101.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@/Images/myAccountFont.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="54.0" fitWidth="252.0" layoutX="519.0" layoutY="101.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@/Images/resetPasswordFont.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="101.0" fitWidth="388.0" layoutX="828.0" layoutY="97.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@/Images/encryptionFont.png" />
+         </image>
+      </ImageView>
+            <Button fx:id="logoutButton" layoutX="12.0" layoutY="760.0" mnemonicParsing="false" onAction="#handleLogoutButton" style="-fx-background-color: transparent;" text="Logout" textFill="WHITE">
+         <font>
+            <Font name="System Bold Italic" size="12.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+	</children>	
+</AnchorPane>

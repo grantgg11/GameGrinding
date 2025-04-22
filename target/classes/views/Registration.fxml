@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+	 This file defines the user interface for the registration screen in the application.
+	 It includes a background image, registration form, and buttons for user actions.
+	 
+ -->
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.effect.InnerShadow?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1280.0" style="-fx-background-color: #0D314B;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.RegistrationController">
+   <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#960000" height="320.0" layoutX="432.0" layoutY="208.0" stroke="BLACK" strokeType="INSIDE" width="482.0" />
+     <ImageView fitHeight="789.0" fitWidth="1379.0" layoutX="8.0" layoutY="16.0" pickOnBounds="true" preserveRatio="true">
+      <image>
+         <Image url="@/Images/startBackground.png" />
+      </image>
+   </ImageView>
+	<Rectangle arcHeight="5.0" arcWidth="5.0" fill="#0d314b" height="434.0" layoutX="370.0" layoutY="187.0" stroke="BLACK" strokeType="INSIDE" width="625.0" />
+   
+   <ImageView fitHeight="652.0" fitWidth="662.0" layoutX="358.0" layoutY="102.0" pickOnBounds="true" preserveRatio="true">
+      <image>
+         <Image url="@/Images/2.png" />
+      </image>
+   </ImageView>
+	<Rectangle arcHeight="20.0" arcWidth="20.0" fill="#960000" height="374.0" layoutX="395.0" layoutY="222.0" stroke="#c3c3c3" strokeType="INSIDE" strokeWidth="3.0" width="581.0" />
+
+	<Label fx:id="errorLabel" layoutX="400" layoutY="550" text="" />
+   <Text fill="WHITE" layoutX="472.0" layoutY="280.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Please Enter the Info Below" textAlignment="CENTER">
+      <font>
+         <Font name="Arial Black" size="28.0" />
+      </font>
+   </Text>
+   <TextField fx:id="usernameField" layoutX="451.0" layoutY="361.0" prefHeight="25.0" prefWidth="206.0" promptText="Username">
+      <effect>
+         <InnerShadow />
+      </effect>
+      <cursor>
+         <Cursor fx:constant="TEXT" />
+      </cursor></TextField>
+   <TextField fx:id="emailField" layoutX="451.0" layoutY="413.0" prefHeight="25.0" prefWidth="206.0" promptText="Email">
+      <effect>
+         <InnerShadow />
+      </effect>
+      <cursor>
+         <Cursor fx:constant="TEXT" />
+      </cursor></TextField>
+   <PasswordField fx:id="passwordField" layoutX="451.0" layoutY="471.0" prefHeight="25.0" prefWidth="206.0" promptText="Password">
+      <cursor>
+         <Cursor fx:constant="TEXT" />
+      </cursor>
+      <effect>
+         <InnerShadow />
+      </effect></PasswordField>
+   <Text fill="WHITE" layoutX="451.0" layoutY="357.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Username">
+      <font>
+         <Font name="System Bold" size="12.0" />
+      </font>
+   </Text>
+   <Text fill="WHITE" layoutX="451.0" layoutY="408.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Email">
+      <font>
+         <Font name="System Bold" size="12.0" />
+      </font>
+   </Text>
+   <Text fill="WHITE" layoutX="451.0" layoutY="462.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Password">
+      <font>
+         <Font name="System Bold" size="12.0" />
+      </font>
+   </Text>
+   <TextField fx:id="SecurityQuestion1" layoutX="686.0" layoutY="361.0" prefHeight="25.0" prefWidth="198.0" promptText="Answer">
+      <effect>
+         <InnerShadow />
+      </effect>
+      <cursor>
+         <Cursor fx:constant="TEXT" />
+      </cursor></TextField>
+   <TextField fx:id="SecurityQuestion2" layoutX="686.0" layoutY="413.0" prefHeight="25.0" prefWidth="198.0" promptText="Answer">
+      <effect>
+         <InnerShadow />
+      </effect>
+      <cursor>
+         <Cursor fx:constant="TEXT" />
+      </cursor></TextField>
+   <Text fill="WHITE" layoutX="686.0" layoutY="357.0" strokeType="OUTSIDE" strokeWidth="0.0" text="What is your mother's maiden name?" />
+   <Text fill="WHITE" layoutX="686.0" layoutY="408.0" strokeType="OUTSIDE" strokeWidth="0.0" text="What elementary school did you go to?" />
+   <Text fill="WHITE" layoutX="684.0" layoutY="329.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Security Questions">
+      <font>
+         <Font name="System Bold" size="16.0" />
+      </font>
+   </Text>
+   <TextField fx:id="SecurityQuestion3" layoutX="686.0" layoutY="471.0" prefHeight="25.0" prefWidth="198.0" promptText="Answer">
+      <effect>
+         <InnerShadow />
+      </effect>
+      <cursor>
+         <Cursor fx:constant="TEXT" />
+      </cursor></TextField>
+   <Text fill="WHITE" layoutX="686.0" layoutY="462.0" strokeType="OUTSIDE" strokeWidth="0.0" text="What city were you born in?" />
+   <Button fx:id="registerButton" layoutX="632.0" layoutY="517.0" mnemonicParsing="false" onAction="#handleRegister" prefHeight="25.0" prefWidth="81.0" style="-fx-background-color: #0d314b; -fx-border-color: white; -fx-background-radius: 6px; -fx-border-radius: 6px; -fx-border-width: 2px;" text="Submit" textFill="WHITE">
+      <font>
+         <Font name="System Bold" size="12.0" />
+      </font>
+      <cursor>
+         <Cursor fx:constant="HAND" />
+      </cursor>
+      <effect>
+         <DropShadow />
+      </effect></Button>
+   <Button fx:id="backButton" layoutX="410.0" layoutY="234.0" mnemonicParsing="false" onAction="#handleBackButton" prefHeight="16.0" prefWidth="24.0" style="-fx-background-color: transparent;">
+      <graphic>
+         <ImageView fitHeight="35.0" fitWidth="29.0" pickOnBounds="true" preserveRatio="true">
+            <image>
+               <Image url="@/Images/backIcon.png" />
+            </image>
+         </ImageView>
+      </graphic>
+      <cursor>
+         <Cursor fx:constant="HAND" />
+      </cursor>
+   </Button>
+   <ImageView fitHeight="214.0" fitWidth="712.0" layoutX="332.0" pickOnBounds="true" preserveRatio="true">
+      <image>
+         <Image url="@/Images/createAccountFont.png" />
+      </image>
+   </ImageView>
+            
+</AnchorPane>

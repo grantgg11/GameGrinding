@@ -1,0 +1,11 @@
+application\Main.class
+models\userGameCollection.class
+utils\JSONParser.class
+controllers\LoginController.class
+controllers\MainController.class
+views\loginUI.class
+models\user.class
+application\GameGrindingApp.class
+application\AppLauncher.class
+services\mobyGamesAPIService.class
+models\game.class
