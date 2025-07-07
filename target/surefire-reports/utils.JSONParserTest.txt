@@ -1,0 +1,58 @@
+-------------------------------------------------------------------------------
+Test set: utils.JSONParserTest
+-------------------------------------------------------------------------------
+Tests run: 5, Failures: 1, Errors: 4, Skipped: 0, Time elapsed: 0.221 s <<< FAILURE! -- in utils.JSONParserTest
+utils.JSONParserTest.testSendGetRequest_SuccessfulResponse -- Time elapsed: 0.203 s <<< ERROR!
+java.lang.NoClassDefFoundError: utils/JSONParser
+	at utils.JSONParserTest.testSendGetRequest_SuccessfulResponse(JSONParserTest.java:36)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+Caused by: java.lang.ClassNotFoundException: utils.JSONParser
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 4 more
+
+utils.JSONParserTest.testParseJson_ReturnsCorrectJsonObject -- Time elapsed: 0.001 s <<< ERROR!
+java.lang.NoClassDefFoundError: utils/JSONParser
+	at utils.JSONParserTest.testParseJson_ReturnsCorrectJsonObject(JSONParserTest.java:120)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+Caused by: java.lang.ClassNotFoundException: utils.JSONParser
+	... 4 more
+
+utils.JSONParserTest.testSendGetRequest_Non429Failure -- Time elapsed: 0.009 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: Unexpected exception type thrown, expected: <java.io.IOException> but was: <java.lang.NoClassDefFoundError>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:67)
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:35)
+	at org.junit.jupiter.api.Assertions.assertThrows(Assertions.java:3111)
+	at utils.JSONParserTest.testSendGetRequest_Non429Failure(JSONParserTest.java:112)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+Caused by: java.lang.NoClassDefFoundError: utils/JSONParser
+	at utils.JSONParserTest.lambda$testSendGetRequest_Non429Failure$11(JSONParserTest.java:112)
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:53)
+	... 6 more
+Caused by: java.lang.ClassNotFoundException: utils.JSONParser
+	... 8 more
+
+utils.JSONParserTest.testSendGetRequest_ExceedsMaxRetries -- Time elapsed: 0.003 s <<< ERROR!
+org.mockito.exceptions.base.MockitoException: It is not possible to mock static methods of java.lang.Thread to avoid interfering with class loading what leads to infinite loops
+	at utils.JSONParserTest.testSendGetRequest_ExceedsMaxRetries(JSONParserTest.java:91)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+utils.JSONParserTest.testSendGetRequest_HitsRateLimitThenSucceeds -- Time elapsed: 0.002 s <<< ERROR!
+java.lang.NoClassDefFoundError: utils/JSONParser
+	at utils.JSONParserTest.testSendGetRequest_HitsRateLimitThenSucceeds(JSONParserTest.java:60)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+Caused by: java.lang.ClassNotFoundException: utils.JSONParser
+	... 4 more
+

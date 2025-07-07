@@ -1,0 +1,20 @@
+2025-07-06 12:55:04 INFO  reports.DatabaseIntegrityLogger - Database integrity analysis complete: DatabaseIntegrityReport{Total=94, Missing=0, Duplicates=17, ForeignKeyOK=NO}
+2025-07-06 12:55:18 INFO  reports.PerformanceTracker - System performance log inserted: ScreenLoadTime=227ms, DBQueryTime=227ms, Memory=157MB, GCEvents=12, Notes=null
+2025-07-06 12:55:24 INFO  reports.PerformanceTracker - System performance log inserted: ScreenLoadTime=1ms, DBQueryTime=1ms, Memory=297MB, GCEvents=24, Notes=null
+2025-07-06 12:55:50 INFO  reports.PerformanceTracker - System performance log inserted: ScreenLoadTime=157ms, DBQueryTime=157ms, Memory=290MB, GCEvents=27, Notes=null
+2025-07-06 12:55:51 INFO  reports.PerformanceTracker - System performance log inserted: ScreenLoadTime=0ms, DBQueryTime=0ms, Memory=427MB, GCEvents=27, Notes=null
+2025-07-06 12:55:53 INFO  reports.PerformanceTracker - System performance log inserted: ScreenLoadTime=0ms, DBQueryTime=0ms, Memory=453MB, GCEvents=27, Notes=null
+2025-07-06 12:56:11 INFO  reports.APIRequestLogger - API request logged successfully.
+2025-07-06 12:56:13 INFO  reports.APIRequestLogger - API request logged successfully.
+2025-07-06 12:56:14 INFO  reports.APIRequestLogger - API request logged successfully.
+2025-07-06 12:56:18 INFO  reports.APIRequestLogger - API request logged successfully.
+2025-07-06 12:56:19 INFO  reports.APIRequestLogger - API request logged successfully.
+2025-07-06 12:56:20 INFO  reports.APIRequestLogger - API request logged successfully.
+2025-07-06 12:56:22 INFO  reports.APIRequestLogger - API request logged successfully.
+2025-07-06 12:56:24 INFO  reports.APIRequestLogger - API request logged successfully.
+2025-07-06 12:56:26 INFO  reports.APIRequestLogger - API request logged successfully.
+2025-07-06 12:56:27 INFO  reports.APIRequestLogger - API request logged successfully.
+2025-07-06 12:56:32 INFO  reports.PerformanceTracker - System performance log inserted: ScreenLoadTime=0ms, DBQueryTime=0ms, Memory=516MB, GCEvents=27, Notes=null
+2025-07-06 12:56:34 INFO  reports.PerformanceTracker - System performance log inserted: ScreenLoadTime=0ms, DBQueryTime=0ms, Memory=280MB, GCEvents=28, Notes=null
+2025-07-06 12:56:39 INFO  reports.PerformanceTracker - System performance log inserted: ScreenLoadTime=117ms, DBQueryTime=117ms, Memory=361MB, GCEvents=28, Notes=null
+2025-07-06 12:56:42 INFO  reports.PerformanceTracker - System performance log inserted: ScreenLoadTime=0ms, DBQueryTime=0ms, Memory=357MB, GCEvents=30, Notes=null

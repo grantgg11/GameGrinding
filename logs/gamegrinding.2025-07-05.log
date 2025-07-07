@@ -1,0 +1,9 @@
+2025-07-05 14:02:20 INFO  reports.DatabaseIntegrityLogger - Database integrity analysis complete: DatabaseIntegrityReport{Total=94, Missing=0, Duplicates=17, ForeignKeyOK=NO}
+2025-07-05 14:02:31 INFO  reports.PerformanceTracker - System performance log inserted: ScreenLoadTime=222ms, DBQueryTime=221ms, Memory=156MB, GCEvents=13, Notes=null
+2025-07-05 14:02:39 INFO  reports.PerformanceTracker - System performance log inserted: ScreenLoadTime=2ms, DBQueryTime=2ms, Memory=222MB, GCEvents=29, Notes=null
+2025-07-05 14:02:50 INFO  reports.PerformanceTracker - System performance log inserted: ScreenLoadTime=0ms, DBQueryTime=0ms, Memory=251MB, GCEvents=32, Notes=null
+2025-07-05 14:02:55 INFO  reports.PerformanceTracker - System performance log inserted: ScreenLoadTime=1ms, DBQueryTime=1ms, Memory=128MB, GCEvents=32, Notes=null
+2025-07-05 14:02:56 INFO  reports.PerformanceTracker - System performance log inserted: ScreenLoadTime=139ms, DBQueryTime=139ms, Memory=207MB, GCEvents=32, Notes=null
+2025-07-05 14:02:57 INFO  reports.PerformanceTracker - System performance log inserted: ScreenLoadTime=0ms, DBQueryTime=0ms, Memory=206MB, GCEvents=33, Notes=null
+2025-07-05 14:07:04 INFO  reports.PerformanceTracker - System performance log inserted: ScreenLoadTime=127ms, DBQueryTime=127ms, Memory=307MB, GCEvents=36, Notes=null
+2025-07-05 14:07:07 INFO  reports.PerformanceTracker - System performance log inserted: ScreenLoadTime=0ms, DBQueryTime=0ms, Memory=224MB, GCEvents=41, Notes=null
