@@ -1,6 +1,6 @@
 package controllers;
 
-import database.CollectionDAO;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;

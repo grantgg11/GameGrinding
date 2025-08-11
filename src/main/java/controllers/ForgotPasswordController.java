@@ -91,52 +91,51 @@ public class ForgotPasswordController {
 		String newPassword = PasswordField.getText();
 		String confirmPassword = confirmPasswordField.getText();
 		
+		StringBuilder errorMessages = new StringBuilder();
+		
 		// Validation: Ensure no field is left empty
 		if (email.isEmpty() || answer1.isEmpty() || answer2.isEmpty() || answer3.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
-			System.out.println("All fields are required.");
-			alert.showError("Error", "Incomplete Form", "Please fill in all fields.");
-			return;
+			errorMessages.append("- All fields must be filled out.\n");
 		}
 		//Retrieve the user by email
 		user currentUser = userSer.getUserByEmail(email);
-		System.out.println("Current user fetched: " + currentUser);
 		
-		if (currentUser == null) {
-			System.out.println("No user found with the provided email.");
-			alert.showError("Error", "User Not Found", "No user found with the provided email.");
-			return;
-		}
+	    if (!email.isEmpty() && currentUser == null) {
+	        errorMessages.append("- No user found with the provided email.\n");
+	    }
 		
-		// Verify security answers
-		if( !userSer.verifySecurityAnswers(currentUser.getUserID(), answer1, answer2, answer3)) {
-			System.out.println("Security answers do not match.");
-			alert.showError("Error", "Security Answers Mismatch", "At security answers are incorrect.");
-			return;
-		}
-		// Check if the new password and confirm password match
-		if (!newPassword.equals(confirmPassword)) {
-			System.out.println("Passwords do not match.");
-			alert.showError("Error", "Password Mismatch", "The new passwords do not match.");
-			return;
-		}
-		// Check if the new password is strong enough
-		if(userSer.isPasswordStrong(newPassword) == false) {
-			System.out.println("Password is not strong enough.");
-			alert.showError("Error", "Weak Password", "Password must be at least 8 characters long, contain uppercase and lowercase letters, numbers, and special characters.");
-			return;
-		}
+	    // Only check security answers if user exists
+	    if (currentUser != null && !userSer.verifySecurityAnswers(currentUser.getUserID(), answer1, answer2, answer3)) {
+	        errorMessages.append("- One or more security answers are incorrect.\n");
+	    }
+		
+	    // Check if the new password and confirm password match
+	    if (!newPassword.equals(confirmPassword)) {
+	        errorMessages.append("- New password and confirmation do not match.\n");
+	    }
+	    
+	    // Check if the new password is strong enough
+	    if (!userSer.isPasswordStrong(newPassword)) {
+	        errorMessages.append("- Password must be at least 8 characters long, contain uppercase and lowercase letters, numbers, and special characters.\n");
+	    }
+	    
+	    // If there are validation errors, show one grouped alert
+	    if (errorMessages.length() > 0) {
+	        System.out.println("Validation failed:\n" + errorMessages);
+	        alert.showError("Error", "Password Reset Failed", errorMessages.toString());
+	        return;
+	    }
+	    
 		// Update the password in the database
 		if(userSer.updateForgottenPassword(currentUser.getUserID(), newPassword)) {
-			System.out.println("Password updated successfully!");
 			alert.showInfo("Success", "Password Reset Successful", "Your password has been reset successfully. You can now log in with your new password.");
 			navHelper.switchToLoginPage(submitButton);
 		} else {
-			System.out.println("Failed to update password.");
 			alert.showError("Error", "Password Update Failed", "There was an error updating your password. Please try again later.");
 			return;
 		}
 
-		System.out.println("Password reset for: " + email);
+		System.out.println("Password reset for: " + email); 
 	}
 	
 	/**

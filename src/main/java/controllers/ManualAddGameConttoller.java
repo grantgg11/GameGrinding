@@ -2,7 +2,11 @@ package controllers;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -219,54 +223,112 @@ public class ManualAddGameConttoller extends BaseController {
         }
     }
     
+
     /**
 	 * Handles the cover art field.
-	 * If an image is selected, it copies it to the Images directory.
-	 * If no image is selected, it randomly chooses a placeholder image.
-	 * @return the path to the cover art image
+     * If an image is selected, it is copied to the resolved Images directory determined by the resolveImagesDir method.
+     * If no image is selected, a placeholder image is randomly chosen from the classpath Images folder.
+     * If the image copy fails, the original image file location is used as a fallback.
+	 * @return the URL string to the cover art image
 	 */
     @FXML
     protected String getCoverArtField() {
-        File imagesDir = new File("Images");
-        if (!imagesDir.exists()) {
-            imagesDir.mkdir();
-        }
+        Path imagesDir = resolveImagesDir();
+        System.out.println("[CoverArt] imagesDir = " + imagesDir);
 
+        // USER-SELECTED IMAGE
         if (selectedImageFile != null) {
+            System.out.println("[CoverArt] selectedImageFile = " + selectedImageFile.getAbsolutePath());
             try {
-                String originalFileName = selectedImageFile.getName();
-                File destFile = new File(imagesDir, originalFileName);
-                
-                if (destFile.exists()) {
-                    String baseName = originalFileName.substring(0, originalFileName.lastIndexOf('.'));
-                    String extension = originalFileName.substring(originalFileName.lastIndexOf('.'));
-                    String newName = baseName + "_" + System.currentTimeMillis() + extension;
-                    destFile = new File(imagesDir, newName);
+                String original = selectedImageFile.getName();
+                String base = original, ext = "";
+                int dot = original.lastIndexOf('.');
+                if (dot >= 0) { base = original.substring(0, dot); ext = original.substring(dot); }
+
+                Path dest = imagesDir.resolve(original);
+                if (Files.exists(dest)) {
+                    dest = imagesDir.resolve(base + "_" + System.currentTimeMillis() + ext);
                 }
-                Files.copy(selectedImageFile.toPath(), destFile.toPath());
-                String relativePath = "Images/" + destFile.getName();
-                return relativePath;
+
+                Files.copy(selectedImageFile.toPath(), dest, StandardCopyOption.COPY_ATTRIBUTES);
+                String fileUrl = dest.toUri().toString(); // file:/...
+                System.out.println("[CoverArt] COPIED to: " + dest + " | url=" + fileUrl);
+                return fileUrl; 
             } catch (IOException e) {
                 e.printStackTrace();
-                errors.add("Failed to copy cover image.");
-                return null;
-            }
-        } else {
-            // No image selected, randomly choose a placeholder
-            String[] placeholders = {"placeholder1gameGrinding.png", "placeholder2gameGrinding.png"};
-            int randomIndex = (int) (Math.random() * placeholders.length);
-            String chosenPlaceholder = "Images/" + placeholders[randomIndex];
-            File placeholderFile = new File(chosenPlaceholder);
-            if (placeholderFile.exists()) {
-                System.out.println("Using placeholder image: " + chosenPlaceholder);
-                return chosenPlaceholder;
-            } else {
-                System.err.println("Placeholder image not found: " + chosenPlaceholder);
-                errors.add("Placeholder image missing.");
+                errors.add("Failed to copy cover image to: " + imagesDir);
+                try {
+                    String fallback = selectedImageFile.toURI().toString();
+                    System.out.println("[CoverArt] Using fallback original path: " + fallback);
+                    return fallback;
+                } catch (Exception ignore) { }
                 return null;
             }
         }
+
+        // PLACEHOLDER from classpath
+        String[] placeholders = {"placeholder1gameGrinding.png", "placeholder2gameGrinding.png"};
+        String pick = placeholders[(int)(Math.random() * placeholders.length)];
+        String cpPath = "/Images/" + pick;
+
+        URL url = getClass().getResource(cpPath);
+        if (url != null) {
+            String u = url.toExternalForm();
+            System.out.println("[CoverArt] Using classpath placeholder: " + cpPath + " -> " + u);
+            return u;
+        } else {
+            System.err.println("[CoverArt] Placeholder NOT FOUND on classpath: " + cpPath);
+            errors.add("Placeholder image missing from resources.");
+            return null;
+        }
     }
+
+    
+    
+    /**
+     * Resolves the directory used to store cover art images.
+     * The resolution priority is as follows:
+     * 1. If the system property gamegrinding.images.dir is set, use that path.
+     * 2. If an Images folder exists (or can be created) in the current working directory and is writable, use that folder.
+     * 3. Otherwise, use the Images folder under the GameGrinding directory in the user's home folder.
+     * 
+     * @return the path to the resolved Images directory.
+     */
+    private Path resolveImagesDir() {
+        //Highest priority: explicit override via JVM arg
+        String override = System.getProperty("gamegrinding.images.dir");
+        if (override != null && !override.isBlank()) {
+            Path p = Paths.get(override);
+            try { Files.createDirectories(p); } catch (IOException ignored) {}
+            return p;
+        }
+        // 2) Project Images folder next to the working dir
+        Path devImages = Paths.get(System.getProperty("user.dir"), "Images");
+        if (Files.isDirectory(devImages) || createDirQuiet(devImages)) {
+            // Only use this if it's writable (dev case)
+            if (Files.isWritable(devImages)) return devImages;
+        }
+        // Fallback: user home (works on packaged installs)
+        Path homeImages = Paths.get(System.getProperty("user.home"), "GameGrinding", "Images");
+        createDirQuiet(homeImages);
+        return homeImages;
+    }
+
+    /**
+     * Creates a directory if it does not already exist.
+     * This method suppresses IOExceptions and returns false instead of throwing an error.
+     *
+     * @param dir the directory path to create
+     * @return true if the directory exists or was created successfully, false otherwise
+     */
+    private boolean createDirQuiet(Path dir) {
+        try { Files.createDirectories(dir); return true; }
+        catch (IOException e) { return false; }
+    }
+
+
+
+
     // ---------------------- FORM HANDLING ----------------------
     
     /**
@@ -276,10 +338,9 @@ public class ManualAddGameConttoller extends BaseController {
      */
     @FXML
     private game handleSubmit() {
-        // Clear previous errors
         errors.clear();
 
-        // Gather input values
+
         String title = getTitleField();
         String developer = getDeveloperField();
         String publisher = getPublisherField();
@@ -290,13 +351,12 @@ public class ManualAddGameConttoller extends BaseController {
         String completionStatus = getCompletionStatusField(completionStatusField.getValue());
         String coverArt = getCoverArtField();
 
-        // Check for errors
+
         if (!errors.isEmpty()) {
             alert.showAlert("Missing or Invalid Fields", errors);
             return null;
         }
 
-        // Validate release date format
         LocalDate releaseDateParsed = null;
         if (releaseDate != null && !releaseDate.isEmpty()) {
             try {

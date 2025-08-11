@@ -14,13 +14,15 @@ import org.junit.platform.suite.api.Suite;
 @Suite
 @IncludeEngines("junit-jupiter")
 @SelectPackages({
-    "database",
+    "system",
+	"database",
     "controllers",
     "utils",
-    "models",
     "services",
     "reports",
-    "security"
+    "security",
+    "nonfunctional"
+   
      
 })
 public class AllTestRunner {

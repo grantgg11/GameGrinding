@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
  */
 public class ReportDAO {
 
-    private final DatabaseManager dbManager = new DatabaseManager(); 
     private static final Logger logger = LoggerFactory.getLogger(ReportDAO.class);
     private Connection conn;
     

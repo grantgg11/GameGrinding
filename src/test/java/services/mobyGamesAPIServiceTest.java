@@ -62,7 +62,7 @@ class mobyGamesAPIServiceTest {
     /**
      * Uses reflection to invoke private static loadApiKey() method.
      */
-    private String invokeLoadApiKey() throws Exception {
+    private String invokeLoadApiKey() throws Exception { 
         Method method = mobyGamesAPIService.class.getDeclaredMethod("loadApiKey");
         method.setAccessible(true);
         return (String) method.invoke(null);

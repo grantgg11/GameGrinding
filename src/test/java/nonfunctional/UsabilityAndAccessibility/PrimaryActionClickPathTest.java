@@ -2,6 +2,12 @@ package nonfunctional.UsabilityAndAccessibility;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.testfx.api.FxRobot;
@@ -14,9 +20,13 @@ import controllers.TestUtils;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TitledPane;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 
 /**
@@ -58,6 +68,25 @@ public class PrimaryActionClickPathTest {
         WaitForAsyncUtils.waitForFxEvents();
     }
 
+    /**
+	 * Ensures that the UI is reset before all tests run to avoid interference from previous test states.
+	 * This method closes any open windows to ensure a clean slate for each test class.
+	 */
+    @BeforeAll
+    static void beforeAllUIReset() {
+        Platform.runLater(() -> {
+            var snapshot = new ArrayList<>(Window.getWindows());
+            for (Window w : snapshot) {
+                if (w != null && w.isShowing()) {
+                    if (w instanceof Stage s) s.close();
+                    else w.hide();
+                }
+            }
+        });
+        WaitForAsyncUtils.waitForFxEvents();
+    }
+
+    
     /**
      * Validates that users can reach the Add Game (API Search) screen within 3 clicks.
      */
@@ -164,4 +193,36 @@ public class PrimaryActionClickPathTest {
         boolean reached = robot.lookup("#emailField").tryQuery().isPresent(); // 3rd interaction
         assertTrue(reached, "Should reach Create Account screen within 2-3 clicks from logout.");
     }
+    
+    /**
+	 * Resets the UI state after each test to ensure no interference between tests.
+	 * This method closes any open dialogs and resets the application state.
+	 */
+    @AfterEach
+    void resetUIAfterEach(org.testfx.api.FxRobot robot) {
+        Set<Node> buttons;
+        try {
+            buttons = robot.lookup(".dialog-pane .button").queryAll();
+        } catch (Exception e) {
+            buttons = Collections.emptySet();
+        }
+        for (Node btn : buttons) {
+            try { robot.clickOn(btn); } catch (Exception ignored) {}
+        }
+        WaitForAsyncUtils.waitForFxEvents();
+
+        Platform.runLater(() -> {
+            var snapshot = new ArrayList<>(Window.getWindows());
+            for (Window w : snapshot) {
+                if (w != null && w.isShowing()) {
+                    if (w instanceof Stage s) s.close();
+                    else w.hide();
+                }
+            }
+        });
+        WaitForAsyncUtils.waitForFxEvents();
+        robot.release(new KeyCode[] {});
+        robot.release(new MouseButton[] {});
+    }
+
 }

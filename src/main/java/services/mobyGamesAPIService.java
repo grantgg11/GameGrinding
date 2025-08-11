@@ -8,6 +8,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import com.google.gson.*;
 
+import javafx.application.Platform;
 import utils.AlertHelper;
 import utils.JSONParser;
 import models.game;
@@ -136,6 +137,15 @@ public class mobyGamesAPIService {
                         gameList.add(fetchedGame);
                     }
                 }
+            }
+            if (gameList.isEmpty()) {
+                Platform.runLater(() -> {
+                    alertHelper.showError(
+                        "No Games Found",
+                        "No results matched your search query.",
+                        "Please try another title or add the game manually."
+                    );
+                });
             }
         } catch (IOException e) {
             logger.error("Error fetching game data: " + e.getMessage(), e);

@@ -1,7 +1,9 @@
 package services;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.crypto.SecretKey;
@@ -40,7 +42,7 @@ public class userService {
 	 */
     public void setCurrentUserID(int userID) {
         if (userID > 0) { 
-            this.loggedInUserID = userID;
+            this.loggedInUserID = userID; 
             System.out.println("User ID stored in userService: " + userID);
         } else {
             System.out.println("Error: Invalid User ID received in userService.");
@@ -63,7 +65,6 @@ public class userService {
     }
 
     public userService() {
-		// TODO Auto-generated constructor stub
 	}
 
 	public static void setInstance(userService newInstance) {
@@ -90,32 +91,34 @@ public class userService {
 	 */
 	public boolean registerUser(String username, String email, String password, String securityQuestion1, String securityQuestion2, String securityQuestion3) {
 		try {
+			StringBuilder errorMessages = new StringBuilder();
+			
 			if (!isEmailValid(email)) {
-				alert.showError("Invalid Email Format", "Please enter a valid email address.", "");
-				return false;
+				errorMessages.append("- Please enter a valid email address.\n");
 			}
 			
 			// Check if the encrypted email already exists in the database
 			if (userDAO.getUserByEmail(email) != null) {
-				alert.showError("Email Already Exists", "User with this email already exists.", "");
-				return false; 
+				errorMessages.append("- User with this email already exists.\n");
 			}
 
 			// Validate password strength
 			if (!isPasswordStrong(password)) {
-				alert.showError("Weak Password", "Your password needs to have at least one upper case and lower case letter, a number, and a special character.", "");
-				return false;
+				 errorMessages.append("- Password must include one upper and lowercase letters, a number, a special character, and have 8 characters.\n");
 			}
 
 			// Check if security questions are filled
 			if (securityQuestion1.isEmpty() || securityQuestion2.isEmpty() || securityQuestion3.isEmpty()) {
-				alert.showError("Security Questions Required", "Please fill in all security questions.", "");
-				return false;
+				 errorMessages.append("- All security questions must be filled in.\n");
 			}
+			
+	        if (errorMessages.length() > 0) {
+	            alert.showError("Registration Error", "Please fix the following issues:", errorMessages.toString());
+	            return false;
+	        }
+	        
 	        // Hash the password 
-	        System.out.println("Plaintext Password: " + password);
 	        String hashedPassword = PasswordHasher.hashPassword(password);
-	        System.out.println("Hashed Password (Stored in DB): " + hashedPassword);
 			// Hash security answers
 			String hashedSecurityQuestion1 = PasswordHasher.hashPassword(securityQuestion1);
 			String hashedSecurityQuestion2 = PasswordHasher.hashPassword(securityQuestion2);
@@ -245,38 +248,57 @@ public class userService {
 	 * @return true if the update is successful, false otherwise.
 	 */
 	public boolean updateAccount(int userID, String username, String email) {
-		try {
-			// Encrypt email before checking if it exists
-			SecretKey secretKey = KeyStorage.getEncryptionKey();
-			String encryptedEmail = Encryption.encrypt(email, secretKey);
+	    List<String> errors = new ArrayList<>();
 
+	    if (username == null || username.isBlank()) {
+	        errors.add("Username is required.");
+	    }
+	    if (email == null || email.isBlank()) {
+	        errors.add("Email is required.");
+	    } else if (!isEmailValid(email)) {
+	        errors.add("Please enter a valid email address.");
+	    }
+	    
+	    SecretKey secretKey = null;
+	    String encryptedEmail = null;
 
-			// Check if the encrypted email already exists in the database
-			if (userDAO.getUserByEmail(encryptedEmail) != null) {
-				System.out.println("User with this email already exists.");
-				return false; 
-			}
-			
-			// Validate email format
-			if (!isEmailValid(email)) {
-				alert.showError("Invalid Email Format", "Please enter a valid email address.", "");
-				return false;
-			}
-	        boolean isUpdated = userDAO.updateUserAccount(userID, username, encryptedEmail);
-	        
-	        if (isUpdated) {
-	            alert.showInfo("Update successful!", "Account updated successfully!", "");
-	            return true;
-	        } else {
-	            alert.showError("Update Failed", "Failed to update your account. Please try again.", "");
-	            return false;
+	    try {
+	        secretKey = KeyStorage.getEncryptionKey();
+	        encryptedEmail = (email != null) ? Encryption.encrypt(email, secretKey) : null;
+	    } catch (Exception e) {
+	        logger.error("Failed to load encryption key or encrypt email", e);
+	        errors.add("Internal error preparing account update.");
+	    }
+	    
+	    if (encryptedEmail != null) {
+	        try {
+	            var existing = userDAO.getUserByEmail(encryptedEmail);
+	            if (existing != null && existing.getUserID() != userID) {
+	                errors.add("That email is already associated with another account.");
+	            }
+	        } catch (Exception e) {
+	            logger.error("Email uniqueness check failed", e);
+	            errors.add("Internal error checking email uniqueness.");
 	        }
+	    }
+	    
+	    try {
+	        boolean isUpdated = userDAO.updateUserAccount(userID, username, encryptedEmail);
+	        if (!isUpdated) {
+	            errors.add("Failed to update your account. Please try again.");
+	        }
+	    } catch (Exception e) {
+	        logger.error("Error occurred during user update: " + e.getMessage(), e);
+	        errors.add("An unexpected error occurred while updating your account.");
+	    }
 
-		} catch (Exception e) {
-			logger.error("Error occurred during user update: " + e.getMessage(), e);
-			System.out.println("Error occurred during user update: " + e.getMessage());
-			return false;
-		}
+	    if (!errors.isEmpty()) {
+	        alert.showError("Account Update Failed", String.join("\n", errors), "");
+	        return false;
+	    }
+
+	    alert.showInfo("Account Update Successful", "Your account has been updated successfully.", "");
+	    return true;
 	}
 	
 	/**
@@ -287,40 +309,30 @@ public class userService {
 	 * @param inputtedCurrentPassword The current password.
 	 * @return true if the update is successful, false otherwise.
 	 */
-	public boolean updatePassword(int userID, String newPassword, String inputtedCurrentPassword) {
-		try {
-			// Validate password strength
-			if (!isPasswordStrong(newPassword)) {
-				alert.showError("Weak Password", "Your password needs to have at least one upper case and lower case letter, a number, and a special character.", "");
-				return false;
-			}
-			PasswordHasher passwordHasher = new PasswordHasher();		
-			System.out.println("Plaintext Inputted Current Password: " + inputtedCurrentPassword);
-			System.out.println("Looking up password for user ID: " + userID);
-
-			String currentUserPassword = userDAO.getUserPassword(userID);
-			
-			if(PasswordHasher.verifyPassword(inputtedCurrentPassword, currentUserPassword)) {
-				String hashedNewPassword = passwordHasher.hashPassword(newPassword);
-				boolean isUpdated = userDAO.updateUserPassword(userID, hashedNewPassword);
-		        if (isUpdated) {
-		            alert.showInfo("Password Updated", "Password has been updated", "Password updated successfully!");
-		            return true;
-		        } else {
-		            alert.showError("Password Update Failed", "Failed to update password. Please try again.", "");
-		            return false;
-		        }
-			}else {
-	            alert.showError("Incorrect Current Password", "The current password you entered is incorrect.", "");
-	            return false;
-	        
-			}
-
-		} catch (Exception e) {
-			logger.error("Error occurred during password update: " + e.getMessage(), e);
-			System.out.println("Error occurred during password update: " + e.getMessage());
-			return false;
-		}
+	public PasswordUpdateResult updatePassword(int userID, String newPassword, String inputtedCurrentPassword) {
+	    try {
+	        String currentUserPassword = userDAO.getUserPassword(userID);
+	        if (PasswordHasher.verifyPassword(inputtedCurrentPassword, currentUserPassword)) {
+	            String hashedNewPassword = PasswordHasher.hashPassword(newPassword);
+	            boolean isUpdated = userDAO.updateUserPassword(userID, hashedNewPassword);
+	            return isUpdated ? PasswordUpdateResult.SUCCESS : PasswordUpdateResult.UPDATE_FAILED;
+	        } else {
+	            return PasswordUpdateResult.INCORRECT_CURRENT;
+	        }
+	    } catch (Exception e) {
+	        logger.error("Error occurred during password update: " + e.getMessage(), e);
+	        return PasswordUpdateResult.ERROR;
+	    }
+	}
+	
+	/**
+	 * Enum representing possible results of a password update attempt.
+	 */
+	public enum PasswordUpdateResult {
+	    SUCCESS,
+	    INCORRECT_CURRENT,
+	    UPDATE_FAILED,
+	    ERROR
 	}
 	
 	/**
@@ -332,23 +344,19 @@ public class userService {
 	 */
 	public boolean updateForgottenPassword(int userID, String newPassword) {
 		try {
-	        PasswordHasher passwordHasher = new PasswordHasher();
-	        String hashedNewPassword = passwordHasher.hashPassword(newPassword);
-
+	        String hashedNewPassword = PasswordHasher.hashPassword(newPassword);
 	        boolean isUpdated = userDAO.updateUserPassword(userID, hashedNewPassword);
+	        
 	        if(isUpdated) {
-	        	alert.showInfo("Password Updated", "Password has been updated", "Password updated successfully!");
 	            System.out.println("Password updated successfully for user ID: " + userID);
 	            return true;
 	        } else {
-	        	alert.showError("Password Update Failed","Password update failed", "Failed to update password. Please try again.");
 	            System.out.println("Failed to update password for user ID: " + userID);
 	            return false;
 	        }
 		}catch (Exception e) {
 			logger.error("Error occurred during password update: " + e.getMessage(), e);
 			System.out.println("Error occurred during password update: " + e.getMessage());
-			alert.showError("Password Update Failed","Error", "An error occurred while updating the password. Please try again.");
 			return false;
 		}
 	}

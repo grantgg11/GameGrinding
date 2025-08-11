@@ -9,7 +9,6 @@ import java.util.concurrent.ExecutionException;
 import org.apache.hc.core5.http.ParseException;
 
 import database.CollectionDAO;
-import database.GameDAO;
 import models.game;
 import security.AuthManager;
 import utils.AlertHelper;
@@ -25,7 +24,7 @@ public class GameCollectionService {
 	private CollectionDAO collectionDAO = new CollectionDAO();
 	private int loggedInUserID = -1;								// ID of the currently logged-in user
 	
-    private GameDAO gameDAO;
+
     private AuthManager authManager;
     private AlertHelper alert;
 

@@ -47,7 +47,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>application.GameGrindingApp</mainClass>
+                    <mainClass>application.Main</mainClass>
                        <options>
                             <option>--module-path</option>
                             <option>${java.home}/../lib</option>
@@ -63,6 +63,35 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.1.2</version>
             </plugin>
+            
+            <!-- Maven Shade Plugin to create a fat JAR for deployment -->
+		
+		    <plugin>
+		      <groupId>org.apache.maven.plugins</groupId>
+		      <artifactId>maven-shade-plugin</artifactId>
+		      <version>3.4.1</version>
+		      <executions>
+		        <execution>
+		          <phase>package</phase>
+		          <goals>
+		            <goal>shade</goal>
+		          </goals>
+		          <configuration>
+		            <finalName>GameGrinding</finalName>
+		            <shadedArtifactAttached>false</shadedArtifactAttached>
+		            <shadedClassifierName></shadedClassifierName>
+		            <transformers>
+		              <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+		                <mainClass>application.Main</mainClass>
+		              </transformer>
+		            </transformers>
+		          </configuration>
+		        </execution>
+		      </executions>
+		    </plugin>
+
+
+
         </plugins>
     </build>
 
@@ -158,19 +187,20 @@
 <dependency>
     <groupId>org.junit.platform</groupId>
     <artifactId>junit-platform-launcher</artifactId>
-    <version>1.10.0</version>
+    <version>1.10.2</version>
     <scope>test</scope>
 </dependency>
 <dependency>
     <groupId>org.junit.jupiter</groupId>
     <artifactId>junit-jupiter-api</artifactId>
-    <version>5.10.0</version>
+    <version>5.10.2</version>
     <scope>test</scope>
 </dependency>
 <dependency>
     <groupId>org.junit.platform</groupId>
     <artifactId>junit-platform-suite</artifactId>
-    <version>1.10.0</version>
+    <version>1.10.2</version>
+    <scope>test</scope>
 </dependency>
 
 
@@ -207,6 +237,13 @@
         <version>4.0.16-alpha</version>
         <scope>test</scope>
     </dependency>
+    
+	 <dependency>
+	    <groupId>org.openjfx</groupId>
+	    <artifactId>javafx-swing</artifactId>
+	    <version>17</version>
+	</dependency>
+
 
 
     </dependencies>

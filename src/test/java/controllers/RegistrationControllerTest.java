@@ -7,6 +7,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import services.userService;
 import utils.AlertHelper;
 import static org.mockito.Mockito.*;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -106,11 +110,11 @@ class RegistrationControllerTest {
     }
 
     /**
-     * Tests the scenario where registration fails (e.g., due to duplicate user).
-     * Verifies that a failure alert is shown with the appropriate message.
+     * Tests the scenario where registration fails (e.g., duplicate user).
+     * Verifies NO alert is shown and a failure message is printed to the console.
      */
     @Test
-    void testHandleRegister_registrationFails_shouldShowFailureError() throws Exception {
+    void testHandleRegister_registrationFails_shouldPrintFailureAndNoAlert() throws Exception {
         TextField username = new TextField("testuser");
         TextField email = new TextField("test@example.com");
         PasswordField password = new PasswordField();
@@ -126,12 +130,36 @@ class RegistrationControllerTest {
         TestUtils.setPrivateField(controller, "SecurityQuestion2", q2);
         TestUtils.setPrivateField(controller, "SecurityQuestion3", q3);
 
-        when(mockUserService.registerUser(anyString(), anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn(false);
+        userService mockUserService = mock(userService.class);
+        AlertHelper mockAlert = mock(AlertHelper.class);
+        TestUtils.setPrivateField(controller, "userService", mockUserService);
+        TestUtils.setPrivateField(controller, "alert", mockAlert);
 
-        controller.handleRegister();
+        when(mockUserService.registerUser(anyString(), anyString(), anyString(),anyString(), anyString(), anyString())).thenReturn(false);
 
-        verify(mockAlert).showError(eq("Error"), eq("Registration Failed"), contains("exists"));
+
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        System.setOut(new PrintStream(outContent));
+
+        try {
+            org.testfx.api.FxToolkit.setupFixture(controller::handleRegister);
+            org.testfx.util.WaitForAsyncUtils.waitForFxEvents();
+        } finally {
+            System.setOut(originalOut);
+        }
+
+        verify(mockUserService).registerUser(
+            eq("testuser"), eq("test@example.com"), eq("pass123"),
+            eq("ans1"), eq("ans2"), eq("ans3")
+        );
+
+        verifyNoInteractions(mockAlert);
+
+        String output = outContent.toString();
+        assertTrue(output.contains("Registration failed!"), "Expected console output to contain 'Registration failed!' but got: " + output);
     }
+
 
     /**
      * Tests that an exception during registration is handled gracefully and an appropriate error alert is displayed.

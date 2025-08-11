@@ -6,22 +6,33 @@ import static org.mockito.Mockito.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
 
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.mockito.MockedConstruction;
 import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.util.WaitForAsyncUtils;
- 
+import static org.junit.jupiter.api.parallel.Resources.SYSTEM_OUT;
+
 /**
  * Unit tests for the AddGamePopupController class in the GameGrinding application.
  *
@@ -29,7 +40,8 @@ import org.testfx.util.WaitForAsyncUtils;
  * either through manual entry or via the MobyGames API. It ensures proper stage behavior,
  * navigation logic, and error handling.
  */
-@ExtendWith({ApplicationExtension.class, JavaFXThreadingExtension.class})
+@ExtendWith({ ApplicationExtension.class, JavaFXThreadingExtension.class }) 
+@ResourceLock(SYSTEM_OUT)
 class AddGamePopupControllerTest {
 
     private AddGamePopupController controller;
@@ -45,25 +57,43 @@ class AddGamePopupControllerTest {
     }
 
     /**
+	 * Ensures all JavaFX windows are closed before any tests run to prevent interference.
+	 */
+    @BeforeAll
+    static void wipeUiOnceAtStart() {
+        Platform.runLater(() -> {
+            var snapshot = new ArrayList<>(Window.getWindows());
+            for (Window w : snapshot) {
+                if (w != null && w.isShowing()) {
+                    if (w instanceof Stage s) s.close();
+                    else w.hide();
+                }
+            }
+        });
+        WaitForAsyncUtils.waitForFxEvents();
+    }
+
+    /**
      * Verifies that onUserDataLoad executes without throwing and logs the user ID.
      */
     @Test
     void onUserDataLoad_shouldPrintUserID() {
         AddGamePopupController controller = new AddGamePopupController();
-        TestUtils.setPrivateField(controller, "loggedInUserID", 42); 
+        TestUtils.setPrivateField(controller, "loggedInUserID", 42);
 
         ByteArrayOutputStream outContent = new ByteArrayOutputStream();
         PrintStream originalOut = System.out;
-        System.setOut(new PrintStream(outContent)); 
-        assertDoesNotThrow(controller::onUserDataLoad, "onUserDataLoad should not throw an exception");
-
-        System.setOut(originalOut);
+        try {
+            System.setOut(new PrintStream(outContent));
+            controller.onUserDataLoad(); 
+        } finally {
+            System.setOut(originalOut);
+        }
 
         String output = outContent.toString().trim();
         assertTrue(output.contains("AddGamePopupController received user ID: 42"),
             "Expected output to confirm received user ID.");
     }
-    
     /**
      * Ensures that clicking the manual add button closes the popup and transitions to the ManualAddGame.fxml view without errors.
      */
@@ -231,4 +261,38 @@ class AddGamePopupControllerTest {
         });
         WaitForAsyncUtils.waitForFxEvents();
     }
+    
+    /**
+	 * Cleans up the UI state after each test by closing dialogs, windows, and releasing input.
+	 * This ensures tests do not interfere with each other due to leftover UI elements.
+	 * 
+	 * @param robot The TestFX robot used to interact with the UI
+	 */
+    @AfterEach
+    void resetUiAfterEach(org.testfx.api.FxRobot robot) {
+        Set<Node> btns;
+        try {
+            btns = robot.lookup(".dialog-pane .button").queryAll();
+        } catch (Exception e) {
+            btns = Collections.emptySet();
+        }
+        for (Node b : btns) {
+            try { robot.clickOn(b); } catch (Exception ignored) {}
+        }
+        WaitForAsyncUtils.waitForFxEvents();
+        Platform.runLater(() -> {
+            var snapshot = new ArrayList<>(Window.getWindows());
+            for (Window w : snapshot) {
+                if (w != null && w.isShowing()) {
+                    if (w instanceof Stage s) s.close();
+                    else w.hide();
+                }
+            }
+        });
+        WaitForAsyncUtils.waitForFxEvents();
+
+        robot.release(new KeyCode[] {});
+        robot.release(new MouseButton[] {});
+    }
+
 }

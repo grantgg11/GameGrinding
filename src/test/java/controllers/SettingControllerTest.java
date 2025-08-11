@@ -3,7 +3,9 @@ package controllers;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 import java.util.List;
 
 import javax.crypto.SecretKey;
@@ -28,6 +30,7 @@ import org.mockito.Mockito;
 import database.ReportDAO;
 import security.Encryption;
 import services.userService;
+import services.userService.PasswordUpdateResult;
 import utils.AlertHelper;
 import utils.CSVExporter;
 import utils.KeyStorage;
@@ -237,29 +240,48 @@ class SettingControllerTest {
 	///////////////////////// testing handleSaveAccount /////////////////////////
 
     /**
-	 * Tests the handleSaveAccount method with empty fields.
-	 * Verifies that it shows an error alert indicating that all fields are required.
-	 */
-    @Test
-    void testHandleSaveAccount_withEmptyFields_shouldShowError() {
-        controller.setUsernameField(new TextField(""));
-        emailField.setText("");
-        controller.handleSaveAccount();
-        verify(mockAlertHelper).showError(eq("Account Update Failed"), eq("All fields are required."), anyString());
-    }
-
-    /**
-     * Tests the handleSaveAccount method when successfully updating the account.
-     * Verifies that it shows an info alert indicating a successful update.
+     * Tests the handleSaveAccount method with empty fields.
+     * Verifies that it prints an error message to the console indicating the failure.
      */
     @Test
-    void testHandleSaveAccount_successfulUpdate_shouldShowInfo() {
+    void testHandleSaveAccount_withEmptyFields_shouldPrintError() {
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        System.setOut(new PrintStream(outContent));
+
+        try {
+            controller.setUsernameField(new TextField(""));
+            emailField.setText("");
+
+            controller.handleSaveAccount();
+
+            String output = outContent.toString();
+            assertTrue(output.contains("Account update failed."),
+                    "Expected console output to contain 'All fields are required.' but got: " + output);
+        } finally {
+            System.setOut(originalOut);
+        }
+    }
+
+
+    /**
+     * Tests the handleSaveAccount method when the account update is successful.
+     * Verifies that the UserService updateAccount method is called with correct parameters
+     * and that no alerts are displayed.
+     */
+    @Test
+    void testHandleSaveAccount_successfulUpdate_shouldCallUserService() {
         controller.setUsernameField(new TextField("updatedUser"));
         emailField.setText("updated@example.com");
+
         when(mockUserService.updateAccount(1, "updatedUser", "updated@example.com")).thenReturn(true);
+
         controller.handleSaveAccount();
-        verify(mockAlertHelper).showInfo(eq("Account Update Successful"), anyString(), anyString());
+
+        verify(mockUserService).updateAccount(eq(1), eq("updatedUser"), eq("updated@example.com"));
+        verifyNoInteractions(mockAlertHelper);
     }
+
     
     /**
 	 * Tests the handleSaveAccount method when the update fails.
@@ -283,88 +305,247 @@ class SettingControllerTest {
     
     /**
      * Tests the handleSavePassword method with empty fields.
-     * Verifies that it shows an error alert indicating that all fields are required.
+     * Verifies that it shows a SINGLE aggregated error alert (header "Please fix the following:")
+     * and DOES NOT call updatePassword. isPasswordStrong may be invoked and is fine.
      */
     @Test
-    void testHandleSavePassword_fieldsEmpty_shouldShowError() {
+    void testHandleSavePassword_fieldsEmpty_shouldShowSingleAggregatedError() {
         newPasswordField.setText("");
         confirmPasswordField.setText("new123");
         currentPasswordField.setText("old123");
         currentPasswordField2.setText("old123");
 
-        controller.handleSavePassword();
-        verify(mockAlertHelper).showError(eq("Password Update Failed"), eq("All fields are required."), anyString());
-        verifyNoInteractions(mockUserService);
-    }
-
-    /**
-	 * Tests the handleSavePassword method with mismatched new passwords.
-	 * Verifies that it shows an error alert indicating the mismatch.
-	 */
-    @Test
-    void testHandleSavePassword_newPasswordsMismatch_shouldShowError() {
-        newPasswordField.setText("new123");
-        confirmPasswordField.setText("new456");
-        currentPasswordField.setText("old123");
-        currentPasswordField2.setText("old123");
+        // Strength isn’t the point of this test; avoid extra error lines:
+        when(mockUserService.isPasswordStrong(anyString())).thenReturn(true);
 
         controller.handleSavePassword();
 
-        verify(mockAlertHelper).showError(eq("Password Update Failed"), eq("New Passwords do not match."), anyString());
+        verify(mockAlertHelper).showError(
+            eq("Password Update Failed"),
+            eq("Please fix the following:"),
+            argThat(msg -> msg.contains("All fields are required."))
+        );
+        // Allow isPasswordStrong to be called, but ensure updatePassword is NOT called
+        verify(mockUserService, never()).updatePassword(anyInt(), anyString(), anyString());
     }
-
+    
     /**
-     * Tests the handleSavePassword method with mismatched current passwords.
-     * Verifies that it shows an error alert indicating the mismatch.
+     * Tests mismatched new passwords -> SINGLE aggregated error alert ("Please fix the following:")
+     * Verify updatePassword is NOT called (isPasswordStrong may be called and is fine).
      */
     @Test
-    void testHandleSavePassword_currentPasswordsMismatch_shouldShowError() {
+    void testHandleSavePassword_newPasswordsMismatch_shouldShowAggregatedError() {
         newPasswordField.setText("new123");
-        confirmPasswordField.setText("new123");
-        currentPasswordField.setText("old123");
-        currentPasswordField2.setText("wrongOld123");
-
-        controller.handleSavePassword();
-
-        verify(mockAlertHelper).showError(eq("Password Update Failed"), eq("Current Passwords do not match."), anyString());
-    }
-
-    /**
-	 * Tests the handleSavePassword method when the update is successful.
-	 * Verifies that it shows an info alert indicating a successful update.
-	 */
-    @Test
-    void testHandleSavePassword_updateSuccessful_shouldShowInfo() {
-        newPasswordField.setText("new123");
-        confirmPasswordField.setText("new123");
+        confirmPasswordField.setText("new456"); // mismatch
         currentPasswordField.setText("old123");
         currentPasswordField2.setText("old123");
 
-        when(mockUserService.updatePassword(1, "new123", "old123")).thenReturn(true);
+        when(mockUserService.isPasswordStrong(anyString())).thenReturn(true);
 
         controller.handleSavePassword();
 
-        verify(mockUserService).updatePassword(1, "new123", "old123");
-        verify(mockAlertHelper).showInfo(eq("Password Update Successful"), contains("updated"), anyString());
+        verify(mockAlertHelper).showError(
+            eq("Password Update Failed"),
+            eq("Please fix the following:"),
+            argThat(msg -> msg.contains("New passwords do not match"))
+        );
+        verify(mockUserService, never()).updatePassword(anyInt(), anyString(), anyString());
     }
 
     /**
-     * Tests the handleSavePassword method when the update fails due to incorrect current password.
-     * Verifies that it shows an error alert indicating the failure.
+     * Tests mismatched current passwords -> SINGLE aggregated error alert ("Please fix the following:")
+     * Verify updatePassword is NOT called (isPasswordStrong may be called and is fine).
      */
     @Test
-    void testHandleSavePassword_updateFails_shouldShowError() {
+    void testHandleSavePassword_currentPasswordsMismatch_shouldShowAggregatedError() {
         newPasswordField.setText("new123");
         confirmPasswordField.setText("new123");
         currentPasswordField.setText("old123");
-        currentPasswordField2.setText("old123");
+        currentPasswordField2.setText("wrongOld123"); // mismatch
 
-        when(mockUserService.updatePassword(1, "new123", "old123")).thenReturn(false);
+        when(mockUserService.isPasswordStrong(anyString())).thenReturn(true);
 
         controller.handleSavePassword();
 
-        verify(mockAlertHelper).showError(eq("Password Update Failed"), eq("Current password is incorrect."), anyString());
+        verify(mockAlertHelper).showError(
+            eq("Password Update Failed"),
+            eq("Please fix the following:"),
+            argThat(msg -> msg.contains("Current passwords do not match"))
+        );
+        verify(mockUserService, never()).updatePassword(anyInt(), anyString(), anyString());
     }
+    
+    /**
+     * Verifies weak password is included in the single client-side aggregated alert
+     * (strength is checked in the controller now). Service is not called.
+     */
+    @Test
+    void testHandleSavePassword_weakPassword_shouldShowAggregatedError() {
+        newPasswordField.setText("weak");
+        confirmPasswordField.setText("weak");
+        currentPasswordField.setText("old123");
+        currentPasswordField2.setText("old123");
+
+        when(mockUserService.isPasswordStrong("weak")).thenReturn(false);
+
+        controller.handleSavePassword();
+
+        verify(mockAlertHelper, times(1)).showError(
+            eq("Password Update Failed"),
+            eq("Please fix the following:"),
+            argThat(msg -> msg.contains("Password is too weak"))
+        );
+        verify(mockUserService, never()).updatePassword(anyInt(), anyString(), anyString());
+    }
+
+    /**
+     * Verifies that multiple client-side errors (e.g., empty field + mismatch)
+     * are combined into ONE alert (called exactly once), and the service is not invoked.
+     */
+    @Test
+    void testHandleSavePassword_multipleClientSideErrors_singleAlert_noServiceCall() {
+        newPasswordField.setText("");                 // empty
+        confirmPasswordField.setText("new456");       // mismatch with new
+        currentPasswordField.setText("old123");
+        currentPasswordField2.setText("wrongOld123"); // mismatch with current
+
+        when(mockUserService.isPasswordStrong("")).thenReturn(false); // not required, but fine
+
+        controller.handleSavePassword();
+
+        verify(mockAlertHelper, times(1)).showError(
+            eq("Password Update Failed"),
+            eq("Please fix the following:"),
+            argThat(msg -> msg.contains("All fields are required.")
+                          && msg.contains("New passwords do not match")
+                          && msg.contains("Current passwords do not match"))
+        );
+        verify(mockUserService, never()).updatePassword(anyInt(), anyString(), anyString());
+    }
+
+    /**
+     * Ensures that when client-side validation passes, the service is called and
+     * SUCCESS maps to a single info alert. Also verifies fields are cleared.
+     */
+    @Test
+    void testHandleSavePassword_updateSuccessful_shouldShowInfo_andClearFields() {
+        newPasswordField.setText("StrongPassword1!");
+        confirmPasswordField.setText("StrongPassword1!");
+        currentPasswordField.setText("old123");
+        currentPasswordField2.setText("old123");
+
+        when(mockUserService.isPasswordStrong("StrongPassword1!")).thenReturn(true);
+        when(mockUserService.updatePassword(1, "StrongPassword1!", "old123"))
+            .thenReturn(PasswordUpdateResult.SUCCESS);
+
+        controller.handleSavePassword();
+
+        verify(mockUserService).updatePassword(1, "StrongPassword1!", "old123");
+        verify(mockAlertHelper, times(1)).showInfo(
+            eq("Password Update Successful"),
+            contains("updated"),
+            anyString()
+        );
+
+        assertEquals("", newPasswordField.getText());
+        assertEquals("", confirmPasswordField.getText());
+        assertEquals("", currentPasswordField.getText());
+        assertEquals("", currentPasswordField2.getText());
+    }
+
+    /**
+     * Verifies that when the service returns INCORRECT_CURRENT, the controller shows
+     * ONE post-service error alert with header "Please review the following:" and the expected message.
+     */
+    @Test
+    void testHandleSavePassword_incorrectCurrent_shouldShowPostServiceError() {
+        newPasswordField.setText("StrongPassword1!");
+        confirmPasswordField.setText("StrongPassword1!");
+        currentPasswordField.setText("old123");
+        currentPasswordField2.setText("old123");
+
+        when(mockUserService.isPasswordStrong("StrongPassword1!")).thenReturn(true);
+        when(mockUserService.updatePassword(1, "StrongPassword1!", "old123"))
+            .thenReturn(PasswordUpdateResult.INCORRECT_CURRENT);
+
+        controller.handleSavePassword();
+
+        verify(mockAlertHelper, times(1)).showError(
+            eq("Password Update Failed"),
+            eq("Please review the following:"),
+            argThat(msg -> msg.contains("The current password you entered is incorrect"))
+        );
+    }
+
+    /**
+     * Verifies that when the DAO fails to persist (UPDATE_FAILED), the controller shows
+     * ONE post-service error alert with the correct header and message.
+     */
+    @Test
+    void testHandleSavePassword_updateFailed_shouldShowPostServiceError() {
+        newPasswordField.setText("StrongPassword1!");
+        confirmPasswordField.setText("StrongPassword1!");
+        currentPasswordField.setText("old123");
+        currentPasswordField2.setText("old123");
+
+        when(mockUserService.isPasswordStrong("StrongPassword1!")).thenReturn(true);
+        when(mockUserService.updatePassword(1, "StrongPassword1!", "old123"))
+            .thenReturn(PasswordUpdateResult.UPDATE_FAILED);
+
+        controller.handleSavePassword();
+
+        verify(mockAlertHelper, times(1)).showError(
+            eq("Password Update Failed"),
+            eq("Please review the following:"),
+            argThat(msg -> msg.contains("We couldn’t save your new password"))
+        );
+    }
+
+    /**
+     * Verifies that an unexpected error in the service (ERROR) results in a single
+     * post-service error alert with the "Please review the following:" header.
+     */
+    @Test
+    void testHandleSavePassword_serviceError_shouldShowPostServiceError() {
+        newPasswordField.setText("StrongPassword1!");
+        confirmPasswordField.setText("StrongPassword1!");
+        currentPasswordField.setText("old123");
+        currentPasswordField2.setText("old123");
+
+        when(mockUserService.isPasswordStrong("StrongPassword1!")).thenReturn(true);
+        when(mockUserService.updatePassword(1, "StrongPassword1!", "old123"))
+            .thenReturn(PasswordUpdateResult.ERROR);
+
+        controller.handleSavePassword();
+
+        verify(mockAlertHelper, times(1)).showError(
+            eq("Password Update Failed"),
+            eq("Please review the following:"),
+            argThat(msg -> msg.contains("An unexpected error occurred"))
+        );
+    }
+
+    /**
+     * Ensures inputs are trimmed before validation: values with surrounding spaces
+     * are treated as the same. No client-side error should be triggered due to whitespace.
+     */
+    @Test
+    void testHandleSavePassword_trimsInputsBeforeValidation_andCallsService() {
+        newPasswordField.setText("  StrongPassword1!  ");
+        confirmPasswordField.setText("StrongPassword1!   ");
+        currentPasswordField.setText("  old123 ");
+        currentPasswordField2.setText("old123   ");
+
+        when(mockUserService.isPasswordStrong("StrongPassword1!")).thenReturn(true);
+        when(mockUserService.updatePassword(1, "StrongPassword1!", "old123"))
+            .thenReturn(PasswordUpdateResult.SUCCESS);
+
+        controller.handleSavePassword();
+
+        verify(mockUserService).updatePassword(1, "StrongPassword1!", "old123");
+        verify(mockAlertHelper).showInfo(eq("Password Update Successful"), anyString(), anyString());
+    }
+
 
     ///////////////////////// testing populateEncryptionInfo /////////////////////////
     

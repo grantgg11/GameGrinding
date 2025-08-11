@@ -11,7 +11,7 @@ public class DatabaseManager {
     private static Connection sharedConnection; // Connection object to manage the database connection
     private static boolean testMode = false;
 
-    private static final String PROD_DB_URL = "jdbc:sqlite:/Users/Owner/Desktop/GameGrindingCapstone Project/GameGrinding.db";
+    private static final String PROD_DB_URL = "jdbc:sqlite:GameGrinding.db";
     private static final String TEST_DB_URL = "jdbc:sqlite:file:memdb1?mode=memory&cache=shared";;
 
     public static void enableTestMode() {

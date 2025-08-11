@@ -1,6 +1,11 @@
 package application;
 
 import reports.DatabaseIntegrityBackgroundJob;
+
+import java.sql.Connection;
+
+import database.DatabaseInitializer;
+import database.DatabaseManager;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.stage.Stage;
@@ -27,11 +32,18 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		try {
+			System.out.println("START: Loading FXML...");
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/Main.fxml"));
 			Parent root = loader.load();
-
+			System.out.println("END: FXML loaded successfully!");
+			
+			System.out.println("Initializing database schema...");
+			Connection conn = new DatabaseManager().getConnection();
+			DatabaseInitializer.initializeSchema(conn);
+			
 			Scene scene = new Scene(root, 400, 400);
-
+			
+			System.out.println("Loading icon...");
 			Image icon = new Image(getClass().getResourceAsStream("/Images/GameGrinding.png"));
 			primaryStage.getIcons().add(icon);
 			primaryStage.setTitle("GameGrinding");
@@ -39,14 +51,30 @@ public class Main extends Application {
 			primaryStage.setHeight(837);
 			primaryStage.setScene(scene);
 			primaryStage.setResizable(false);
-
+			
+			System.out.println("Showing stage...");
 			primaryStage.show();
 
+			System.out.println("Running DB integrity job...");
 			runDatabaseIntegrityJobInBackground();
 
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println("Error: Could not load Main.fxml!");
+		    // Show a visible dialog in case user runs the EXE
+		    javafx.application.Platform.runLater(() -> {
+		        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+		                javafx.scene.control.Alert.AlertType.ERROR);
+		        alert.setTitle("GameGrinding - Error");
+		        alert.setHeaderText("An error occurred while launching the application.");
+		        alert.setContentText(e.getMessage());
+		        alert.showAndWait();
+		    });
+		    try (java.io.PrintWriter out = new java.io.PrintWriter("startup-error.log")) {
+		        e.printStackTrace(out);
+		    } catch (Exception ex) {
+		        ex.printStackTrace();
+		    }
 		}
 	}
 	 
@@ -76,7 +104,13 @@ public class Main extends Application {
 	 * @param args command-line arguments (not used)
 	 */
 	public static void main(String[] args) {
-		launch(args);
+	    try {
+	    	System.out.println("JavaFX Runtime Version: " + System.getProperty("javafx.runtime.version"));
+	        launch(args);
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        System.err.println("Fatal error: " + e.getMessage());
+	    }
 	}
 }
 

@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
  */
 public class UserDAO {
 	
-	private final DatabaseManager dbManager = new DatabaseManager();
 	private static final Logger logger = LoggerFactory.getLogger(ReportDAO.class);
 	private Connection connection;
 	
@@ -52,7 +51,6 @@ public class UserDAO {
 	        if (resultSet.next()) {
 	        	int userID = resultSet.getInt("userID");
 	        	String storedPassword = resultSet.getString("password");
-	            System.out.println("Retrieved Hashed Password from DB: " + storedPassword);
 	            
 	            return new user(
 	                userID,
@@ -80,7 +78,6 @@ public class UserDAO {
 			statement.setInt(1, userID);
 			ResultSet resultSet = statement.executeQuery();
 			if (resultSet.next()) {
-				System.out.println("Retrieved Hashed Password from DB: " + resultSet.getString("password"));
 				return resultSet.getString("password");
 			} 
 		} catch (SQLException e) {

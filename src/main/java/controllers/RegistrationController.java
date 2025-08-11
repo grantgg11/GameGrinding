@@ -69,7 +69,7 @@ public class RegistrationController {
 				alert.showInfo("Success", "Registration Successful", "You can now log in with your credentials.");
 				navHelper.switchToLoginPage(registerButton);
 			} else {
-				alert.showError("Error", "Registration Failed", "Username or email already exists.");
+				System.out.println("Registration failed!");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

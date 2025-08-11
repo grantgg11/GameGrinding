@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: services.userServiceTest
--------------------------------------------------------------------------------
-Tests run: 37, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.055 s -- in services.userServiceTest

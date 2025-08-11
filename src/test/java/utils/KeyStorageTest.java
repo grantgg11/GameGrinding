@@ -1,147 +1,213 @@
 package utils;
 
-import org.junit.jupiter.api.*;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito; 
+import static org.junit.jupiter.api.Assertions.*;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.Base64;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import security.Encryption;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import static org.junit.jupiter.api.parallel.Resources.SYSTEM_PROPERTIES;
 
 /**
  * Unit tests for the KeyStorage utility class.
- *
- * Tests cover functionality for storing, loading, and retrieving AES encryption keys.
- * Includes mocking of file system behavior to isolate file I/O and validate base64 encoding/decoding.
+ * 
+ * These tests verify encryption key creation, persistence, loading, and error handling.
+ * A temporary home directory is used to isolate file I/O, ensuring no interaction
+ * with the real user environment. System properties are locked to prevent race
+ * conditions when tests run in parallel.
  */
-
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ResourceLock(SYSTEM_PROPERTIES) 
 class KeyStorageTest {
-	
-	 private static Path tempKeyFile;
-	 private static final byte[] dummyKeyBytes = new byte[16]; 
 
-	 	/**
-	 	 * Sets up a temporary file used for testing key storage and retrieval.
-	 	 *
-	 	 * @throws IOException if temporary file creation fails
-	 	 */
-	    @BeforeAll
-	    static void setup() throws IOException {
-	        tempKeyFile = Files.createTempFile("test_encryption", ".key");
-	        tempKeyFile.toFile().deleteOnExit();
-	    }
-	    
-	    /**
-	     * Tests that storeKey correctly writes a Base64-encoded AES key to a file.
-	     *
-	     * @throws Exception if an I/O or encoding error occurs
-	     */
-	    @Test
-	    void testStoreKey_WritesBase64EncodedKeyToFile() throws Exception {
-	        SecretKey secretKey = new SecretKeySpec(dummyKeyBytes, "AES");
+    private Path tempHome;
+    private Path keyDir;
+    private Path keyPath;
 
-	        try (MockedStatic<Paths> mockedPaths = Mockito.mockStatic(Paths.class)) {
-	            mockedPaths.when(() -> Paths.get(anyString())).thenReturn(tempKeyFile);
+    private String prevKeyDirProp;
+    private String prevKeyPathProp;
+    private String prevUserHome;
 
-	            KeyStorage.storeKey(secretKey);
+    /**
+     * Sets up a temporary directory and configures KeyStorage
+     * to use it before all tests run.
+     *
+     * @throws Exception if the temporary directory cannot be created
+     */
+    @BeforeAll
+    void setUp() throws Exception {
+        tempHome = Files.createTempDirectory("gg-home-");
+        keyDir = tempHome.resolve(".gamegrinding");
+        keyPath = keyDir.resolve("encryption.key");
 
-	            byte[] written = Files.readAllBytes(tempKeyFile);
-	            byte[] decoded = Base64.getDecoder().decode(written);
-	            assertArrayEquals(dummyKeyBytes, decoded);
-	        }
-	    }
+        prevKeyDirProp  = System.getProperty("gamegrinding.keyDir");
+        prevKeyPathProp = System.getProperty("gamegrinding.keyPath");
+        prevUserHome    = System.getProperty("user.home");
 
-	    /**
-	     * Tests that loadKey reads and decodes a Base64-encoded AES key from file correctly.
-	     *
-	     * @throws Exception if reading or decoding the key fails
-	     */
-	    @Test
-	    void testLoadKey_ReturnsCorrectSecretKey() throws Exception {
-	        byte[] encoded = Base64.getEncoder().encode(dummyKeyBytes);
-	        Files.write(tempKeyFile, encoded);
+        System.setProperty("gamegrinding.keyDir", keyDir.toString());
+        System.setProperty("user.home", tempHome.toString());
+    }
 
-	        try (MockedStatic<Paths> mockedPaths = Mockito.mockStatic(Paths.class)) {
-	            mockedPaths.when(() -> Paths.get(anyString())).thenReturn(tempKeyFile);
+    /**
+     * Cleans up any key files or directories created during a test.
+     *
+     * @throws Exception if files cannot be deleted
+     */
+    @AfterEach
+    void cleanFiles() throws Exception {
+        if (Files.exists(keyPath)) Files.deleteIfExists(keyPath);
+        if (Files.exists(keyDir)) {
+            try (var s = Files.list(keyDir)) {
+                if (s.findAny().isEmpty()) Files.deleteIfExists(keyDir);
+            }
+        }
+        if (Files.exists(tempHome)) {
+            try (var s = Files.list(tempHome)) {
+                if (s.findAny().isEmpty()) Files.deleteIfExists(tempHome);
+            }
+        }
+    }
 
-	            SecretKey loadedKey = KeyStorage.loadKey();
-	            assertArrayEquals(dummyKeyBytes, loadedKey.getEncoded());
-	            assertEquals("AES", loadedKey.getAlgorithm());
-	        }
-	    }
+    /**
+     * Restores the original system property values after all tests complete.
+     *
+     * @throws Exception if system properties cannot be restored
+     */
+    @AfterAll
+    void tearDown() throws Exception {
+        // Restore props
+        restore("gamegrinding.keyDir", prevKeyDirProp);
+        restore("gamegrinding.keyPath", prevKeyPathProp);
+        restore("user.home", prevUserHome);
+    }
 
-	    /**
-	     * Tests that loadKey throws an IOException when the key file is missing.
-	     */
-	    @Test
-	    void testLoadKey_ThrowsIfFileMissing() {
-	        Path fakePath = Paths.get("nonexistent_file.key");
+    /**
+     * Restores a single system property to its previous value.
+     *
+     * @param key   the property name
+     * @param value the original value, or null to clear the property
+     */
+    private void restore(String key, String value) {
+        if (value == null) System.clearProperty(key);
+        else System.setProperty(key, value);
+    }
 
-	        try (MockedStatic<Paths> mockedPaths = Mockito.mockStatic(Paths.class)) {
-	            mockedPaths.when(() -> Paths.get(anyString())).thenReturn(fakePath);
 
-	            assertThrows(IOException.class, KeyStorage::loadKey);
-	        }
-	    }
+    /**
+     * Creates a byte array of the given length, incrementing values from a seed.
+     *
+     * @param len  number of bytes
+     * @param seed starting byte value
+     * @return the generated byte array
+     */
+    private static byte[] bytes(int len, byte seed) {
+        byte[] b = new byte[len];
+        for (int i = 0; i < len; i++) b[i] = (byte) (seed + i);
+        return b;
+    }
 
-	    /**
-	     * Tests that getEncryptionKey generates a new AES key and stores it when no key file exists.
-	     *
-	     * @throws Exception if key generation or storage fails
-	     */
-	    @Test
-	    void testGetEncryptionKey_GeneratesAndStoresNewKeyIfMissing() throws Exception {
-	        Path fakePath = Paths.get("missing.key");
+    /**
+     * Verifies that getEncryptionKey() generates and stores a key when no key file exists.
+     *
+     * @throws Exception if key creation or file I/O fails
+     */
+    @Test
+    void getEncryptionKey_generatesAndPersists_whenMissing() throws Exception {
+        assertFalse(Files.exists(keyPath));
+        SecretKey key = KeyStorage.getEncryptionKey();
+        assertNotNull(key);
+        assertTrue(Files.exists(keyPath));
 
-	        SecretKey mockKey = new SecretKeySpec(dummyKeyBytes, "AES");
+        byte[] diskDecoded = Base64.getDecoder().decode(Files.readAllBytes(keyPath));
+        assertArrayEquals(key.getEncoded(), diskDecoded);
+    }
 
-	        try (MockedStatic<Paths> mockedPaths = Mockito.mockStatic(Paths.class);
-	             MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class);
-	             MockedStatic<Encryption> mockedEncryption = Mockito.mockStatic(Encryption.class)) {
+    /**
+     * Verifies that getEncryptionKey() loads an existing key without overwriting it.
+     *
+     * @throws Exception if key storage or retrieval fails
+     */
+    @Test
+    void getEncryptionKey_returnsExisting_withoutOverwriting() throws Exception {
+        byte[] known = bytes(32, (byte) 7);
+        SecretKey knownKey = new SecretKeySpec(known, "AES");
+        KeyStorage.storeKey(knownKey);
 
-	            mockedPaths.when(() -> Paths.get(anyString())).thenReturn(fakePath);
-	            mockedFiles.when(() -> Files.exists(fakePath)).thenReturn(false);
-	            mockedEncryption.when(Encryption::generateKey).thenReturn(mockKey);
+        SecretKey loaded = KeyStorage.getEncryptionKey();
+        assertArrayEquals(known, loaded.getEncoded());
+    }
 
-	            mockedFiles.when(() -> Files.write(eq(fakePath), any(byte[].class))).thenAnswer(invocation -> {
-	                byte[] toWrite = invocation.getArgument(1);
-	                Files.write(tempKeyFile, toWrite);
-	                return tempKeyFile;
-	            });
+    /**
+     * Verifies that storing and loading a key returns the same bytes.
+     *
+     * @throws Exception if key storage or retrieval fails
+     */
+    @Test
+    void storeKey_then_loadKey_roundTrip() throws Exception {
+        byte[] data = bytes(16, (byte) 42);
+        SecretKey original = new SecretKeySpec(data, "AES");
 
-	            SecretKey result = KeyStorage.getEncryptionKey();
-	            assertNotNull(result);
-	            assertArrayEquals(dummyKeyBytes, result.getEncoded());
-	        }
-	    }
+        KeyStorage.storeKey(original);
+        SecretKey roundTripped = KeyStorage.loadKey();
+        assertArrayEquals(original.getEncoded(), roundTripped.getEncoded());
+    }
 
-	    /**
-	     * Tests that getEncryptionKey loads an existing AES key from file if it already exists.
-	     *
-	     * @throws Exception if key loading fails
-	     */
-	    @Test
-	    void testGetEncryptionKey_LoadsExistingKey() throws Exception {
-	        byte[] encoded = Base64.getEncoder().encode(dummyKeyBytes);
-	        Files.write(tempKeyFile, encoded);
+    /**
+     * Verifies that loading a key when the file does not exist throws an IOException.
+     */
+    @Test
+    void loadKey_whenMissing_throwsIOException() {
+        assertFalse(Files.exists(keyPath));
+        assertThrows(IOException.class, KeyStorage::loadKey);
+    }
 
-	        try (MockedStatic<Paths> mockedPaths = Mockito.mockStatic(Paths.class);
-	             MockedStatic<Files> mockedFiles = Mockito.mockStatic(Files.class)) {
+    /**
+     * Verifies that loading a key with invalid Base64 content throws an exception.
+     *
+     * @throws Exception if file writing fails
+     */
+    @Test
+    void loadKey_whenCorruptBase64_throws() throws Exception {
+        Files.createDirectories(keyDir);
+        Files.writeString(keyPath, "not-base64!");
+        assertThrows(IllegalArgumentException.class, KeyStorage::loadKey);
+    }
 
-	            mockedPaths.when(() -> Paths.get(anyString())).thenReturn(tempKeyFile);
-	            mockedFiles.when(() -> Files.exists(tempKeyFile)).thenReturn(true);
-	            mockedFiles.when(() -> Files.readAllBytes(tempKeyFile)).thenReturn(encoded);
+    /**
+     * Verifies that storeKey(SecretKey) creates parent directories if they do not already exist.
+     *
+     * @throws Exception if key storage fails
+     */
 
-	            SecretKey result = KeyStorage.getEncryptionKey();
-	            assertNotNull(result);
-	            assertArrayEquals(dummyKeyBytes, result.getEncoded());
-	        }
-	    }
+    @Test
+    void storeKey_createsParentDirsIfNeeded() throws Exception {
+        if (Files.exists(keyDir)) {
+            Files.walk(keyDir)
+                 .sorted((a,b)->b.getNameCount()-a.getNameCount())
+                 .forEach(p -> { try { Files.deleteIfExists(p); } catch (Exception ignored) {} });
+        }
+
+        byte[] data = bytes(16, (byte) 1);
+        SecretKey k = new SecretKeySpec(data, "AES");
+        KeyStorage.storeKey(k);
+
+        assertTrue(Files.exists(keyPath));
+        assertTrue(Files.exists(keyDir));
+    }
+
+    /**
+     * Verifies that calling getEncryptionKey() multiple times returns a key with the same byte content each time.
+     *
+     * @throws Exception if key retrieval fails
+     */
+    @Test
+    void getEncryptionKey_idempotent_returnsSameBytesOnSubsequentCalls() throws Exception {
+        SecretKey k1 = KeyStorage.getEncryptionKey();
+        SecretKey k2 = KeyStorage.getEncryptionKey();
+        assertArrayEquals(k1.getEncoded(), k2.getEncoded());
+    }
 }

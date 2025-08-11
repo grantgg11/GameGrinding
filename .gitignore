@@ -1,4 +1,21 @@
-*.key
+# ===== IDE / Environment Files =====
+/shelf/
+/workspace.xml
+/httpRequests/
+/dataSources/
+/dataSources.local.xml
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+
+# ===== Build Output =====
+target/
+runtime/
+output/
 *.log
-*.class
-*.jar
+
+# ===== OS-generated Files =====
+.DS_Store
+Thumbs.db

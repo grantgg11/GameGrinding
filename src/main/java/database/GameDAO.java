@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
  */
 public class GameDAO {
 	
-	private final DatabaseManager dbManager = new DatabaseManager();
 	private final Connection connection;
 	private static final Logger logger = LoggerFactory.getLogger(GameDAO.class.getName());
 	

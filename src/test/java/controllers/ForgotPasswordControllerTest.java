@@ -124,12 +124,27 @@ class ForgotPasswordControllerTest {
         assertEquals("test@example.com", emailField.getText(), "Email field should be set by setEmail()");
     }
 
-    /** Ensures an error is shown if the reset button is clicked with empty fields. */
+    /** Ensures a single aggregated error is shown when required fields are empty. */
     @Test
-    void handleResetPassword_shouldShowError_whenFieldsAreEmpty() {
+    void handleResetPassword_shouldShowAggregatedError_whenFieldsAreEmpty() {
+        emailField.setText("");
+        sec1.setText("");
+        sec2.setText("");
+        sec3.setText("");
+        passwordField.setText("");
+        confirmPasswordField.setText("");
+
         controller.handleResetPassword();
-        verify(mockAlert).showError(any(), any(), contains("Please fill in all fields"));
+
+        verify(mockAlert).showError(
+            eq("Error"),
+            eq("Password Reset Failed"),
+            argThat(body -> body.contains("- All fields must be filled out."))
+        );
+
+        verify(mockUserService, never()).updateForgottenPassword(anyInt(), anyString());
     }
+
 
     /** Shows an error when the provided email does not match any user. */
     @Test
@@ -143,10 +158,13 @@ class ForgotPasswordControllerTest {
         verify(mockAlert).showError(any(), any(), contains("No user found"));
     }
 
-    /** Shows an error when the security answers do not match the stored ones. */
+    /** Shows an aggregated error when security answers are incorrect. */
     @Test
     void handleResetPassword_shouldShowError_whenSecurityAnswersFail() {
         mockValidForm();
+        passwordField.setText("StrongPass1!");
+        confirmPasswordField.setText("StrongPass1!");
+
         user mockUser = new user();
         mockUser.setUserID(42);
         when(mockUserService.getUserByEmail(any())).thenReturn(mockUser);
@@ -155,30 +173,44 @@ class ForgotPasswordControllerTest {
         controller.handleResetPassword();
 
         verify(mockAlert).showError(
-        	    eq("Error"),
-        	    eq("Security Answers Mismatch"),
-        	    eq("At security answers are incorrect.")
-        	);
+            eq("Error"),
+            eq("Password Reset Failed"),
+            argThat(body -> body.contains("- One or more security answers are incorrect."))
+        );
+
+        verify(mockUserService, never()).updateForgottenPassword(anyInt(), anyString());
     }
 
-    /** Shows an error if the entered passwords do not match. */
+
+    /** Shows a single aggregated error when passwords do not match (no strength error). */
     @Test
-    void handleResetPassword_shouldShowError_whenPasswordsDoNotMatch() {
-        mockValidForm();
-        confirmPasswordField.setText("Mismatch123!");
+    void handleResetPassword_shouldShowAggregatedError_whenPasswordsDoNotMatch() {
+        mockValidForm(); // sets email, answers, etc.
+        passwordField.setText("StrongPass1!");
+        confirmPasswordField.setText("StrongPass2!");
 
         user mockUser = new user();
         mockUser.setUserID(42);
+
         when(mockUserService.getUserByEmail(any())).thenReturn(mockUser);
         when(mockUserService.verifySecurityAnswers(anyInt(), any(), any(), any())).thenReturn(true);
+        when(mockUserService.isPasswordStrong("StrongPass1!")).thenReturn(true);
 
         controller.handleResetPassword();
+
         verify(mockAlert).showError(
-                eq("Error"),
-                eq("Password Mismatch"),
-                eq("The new passwords do not match.")
-            );
+            eq("Error"),
+            eq("Password Reset Failed"),
+            argThat(body ->
+                body.contains("- New password and confirmation do not match.") &&
+                !body.contains("Password must be at least 8 characters")
+            )
+        );
+
+        verify(mockUserService, never()).updateForgottenPassword(anyInt(), anyString());
+        verify(mockAlert, never()).showInfo(any(), any(), any());
     }
+
 
     /** Shows an error when the password does not meet the strength criteria. */
     @Test

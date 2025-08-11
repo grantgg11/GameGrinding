@@ -2,6 +2,12 @@ package nonfunctional.performance;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.testfx.api.FxRobot;
@@ -13,9 +19,13 @@ import controllers.GameCollectionController;
 import controllers.TestUtils;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 
 /**
  * Non-functional UI Test for User Story US-2.
@@ -48,6 +58,24 @@ public class UserActionResponsivenessTest {
             stage.show();
         });
 
+        WaitForAsyncUtils.waitForFxEvents();
+    }
+    
+    /**
+	 * Ensures a clean state before all tests by closing any open windows.
+	 * This prevents interference from other test classes that may have left windows open.
+	 */
+    @BeforeAll
+    static void beforeAllUIReset() {
+        Platform.runLater(() -> {
+            var snapshot = new ArrayList<>(Window.getWindows());
+            for (Window w : snapshot) {
+                if (w != null && w.isShowing()) {
+                    if (w instanceof Stage s) s.close();
+                    else w.hide();
+                }
+            }
+        });
         WaitForAsyncUtils.waitForFxEvents();
     }
 
@@ -127,4 +155,37 @@ public class UserActionResponsivenessTest {
 
         return false;
     }
+    
+    /**
+	 * Resets the UI state after each test by closing dialogs and windows,
+	 * and releasing any stuck input events to ensure a clean slate for the next test.
+	 *
+	 * @param robot the TestFX robot used to simulate UI interactions
+	 */
+    @AfterEach
+    void resetUIAfterEach(FxRobot robot) {
+        Set<Node> buttons;
+        try {
+            buttons = robot.lookup(".dialog-pane .button").queryAll();
+        } catch (Exception e) {
+            buttons = Collections.emptySet();
+        }
+        for (Node btn : buttons) {
+            try { robot.clickOn(btn); } catch (Exception ignored) {}
+        }
+        WaitForAsyncUtils.waitForFxEvents();
+        Platform.runLater(() -> {
+            var snapshot = new ArrayList<>(Window.getWindows());
+            for (Window w : snapshot) {
+                if (w != null && w.isShowing()) {
+                    if (w instanceof Stage s) s.close();
+                    else w.hide();
+                }
+            }
+        });
+        WaitForAsyncUtils.waitForFxEvents();
+        robot.release(new KeyCode[] {});
+        robot.release(new MouseButton[] {});
+    }
+
 }

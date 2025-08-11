@@ -36,6 +36,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
@@ -233,25 +234,34 @@ class GameDetailsControllerTest {
         when(mockGame.getReleaseDate()).thenReturn(LocalDate.of(2020, 1, 1));
         when(mockGame.getGenre()).thenReturn("RPG");
         when(mockGame.getPlatform()).thenReturn("PC");
-        when(mockGame.getCompletionStatus()).thenReturn("Not Started");
+        when(mockGame.getCompletionStatus()).thenReturn("Completed"); // not shown by controller
         when(mockGame.getNotes()).thenReturn("Some notes.");
-        when(mockGame.getCoverImageUrl()).thenReturn(null); 
+        when(mockGame.getCoverImageUrl()).thenReturn(null); // triggers placeholder
 
-        TestUtils.setPrivateField(controller, "currentGame", mockGame);
+        controller.setCurrentGame(mockGame);
 
-        FxToolkit.setupFixture(() -> {
-            controller.updateGameDetails();
+        org.testfx.api.FxToolkit.setupFixture(controller::updateGameDetails);
+        org.testfx.util.WaitForAsyncUtils.waitForFxEvents();
 
-            assertEquals("Test Game", gameTitle.getText());
-            assertEquals("Developer(s): Test Dev", developerLabel.getText());
-            assertEquals("Publisher(s): Test Pub", publisherLabel.getText());
-            assertEquals("Release Date: 2020-01-01", releaseDateLabel.getText());
-            assertEquals("Genre(s): RPG", genreLabel.getText());
-            assertEquals("Platform(s): PC", platformLabel.getText());
-            assertEquals("Some notes.", notesTextArea.getText());
-            assertEquals("Completion Status: ", completionStatusLabel.getText());
-            assertNull(coverImage.getImage());
-        });
+        assertEquals("Test Game", gameTitle.getText());
+        assertEquals("Developer(s): Test Dev", developerLabel.getText());
+        assertEquals("Publisher(s): Test Pub", publisherLabel.getText());
+        assertEquals("Release Date: 2020-01-01", releaseDateLabel.getText()); // adjust if you format dates differently
+        assertEquals("Genre(s): RPG", genreLabel.getText());
+        assertEquals("Platform(s): PC", platformLabel.getText());
+        assertEquals("Some notes.", notesTextArea.getText());
+
+        assertEquals("Completion Status: ", completionStatusLabel.getText());
+
+        javafx.scene.image.Image img = coverImage.getImage();
+        assertNotNull(img, "Cover image should default to a placeholder when URL is null.");
+        String url = img.getUrl();
+        if (url != null) {
+            assertTrue(url.toLowerCase().contains("placeholder"),
+                    "Expected a placeholder image URL, but was: " + url);
+        } else {
+            assertFalse(img.isError(), "Placeholder image should load without error.");
+        }
     }
     
     /**
@@ -298,27 +308,49 @@ class GameDetailsControllerTest {
     @Test
     void testUpdateGameDetails_ImageDoesNotStartWithHttp_fileDoesNotExist() throws Exception {
         String nonExistentImagePath = "nonexistent/image/path.png";
+
         game mockGame = mock(game.class);
         when(mockGame.getTitle()).thenReturn("Test Game");
+        when(mockGame.getDeveloper()).thenReturn("Dev");
+        when(mockGame.getPublisher()).thenReturn("Pub");
+        when(mockGame.getReleaseDate()).thenReturn(null);
+        when(mockGame.getGenre()).thenReturn("Action");
+        when(mockGame.getPlatform()).thenReturn("PC");
+        when(mockGame.getCompletionStatus()).thenReturn("Not Started");
+        when(mockGame.getNotes()).thenReturn(null);
         when(mockGame.getCoverImageUrl()).thenReturn(nonExistentImagePath);
-        TestUtils.setPrivateField(controller, "currentGame", mockGame);
+
+        controller.setCurrentGame(mockGame);
+
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
         ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
         PrintStream originalErr = System.err;
+        System.setOut(new PrintStream(outContent));
         System.setErr(new PrintStream(errContent));
 
-        FxToolkit.setupFixture(() -> {
-            controller.updateGameDetails();
-        });
-
-        System.setErr(originalErr); 
+        try {
+            FxToolkit.setupFixture(controller::updateGameDetails);
+            WaitForAsyncUtils.waitForFxEvents();
+        } finally {
+            System.setOut(originalOut);
+            System.setErr(originalErr);
+        }
 
         assertEquals("Test Game", gameTitle.getText());
-        assertNull(coverImage.getImage(), "Cover image should be null for non-existent file.");
-        
-        String errorLog = errContent.toString();
-        assertTrue(errorLog.contains("Image file not found"), "Expected error log for missing image.");
-    }
 
+        Image img = coverImage.getImage();
+        assertNotNull(img, "Cover image should fall back to a placeholder when file doesn't exist.");
+        assertFalse(img.isError(), "Placeholder image should load without error.");
+
+        String out = outContent.toString();
+        String err = errContent.toString();
+        assertTrue(
+            out.contains("Primary image failed; using placeholder.")
+                || err.contains("Image could not be resolved:"),
+            "Expected a fallback log, but out=[" + out + "], err=[" + err + "]"
+        );
+    }
     /**
      * Ensures that a fallback message is printed if the image path is malformed or fails to load.
      */
@@ -337,19 +369,35 @@ class GameDetailsControllerTest {
         when(mockGame.getNotes()).thenReturn("Some notes.");
         when(mockGame.getCoverImageUrl()).thenReturn(invalidImagePath);
 
+        
         TestUtils.setPrivateField(controller, "currentGame", mockGame);
 
         ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
         PrintStream originalOut = System.out;
+        PrintStream originalErr = System.err;
         System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
+        try {
+            FxToolkit.setupFixture(controller::updateGameDetails);
+            WaitForAsyncUtils.waitForFxEvents();
+        } finally {
+            System.setOut(originalOut);
+            System.setErr(originalErr);
+        }
 
-        FxToolkit.setupFixture(() -> controller.updateGameDetails());
-        WaitForAsyncUtils.waitForFxEvents();
+        String out = outContent.toString();
+        String err = errContent.toString();
 
-        System.setOut(originalOut);
+        assertTrue(
+            out.contains("Primary image failed; using placeholder.")
+            || err.contains("No valid image or placeholder could be loaded."),
+            "Expected a fallback log when image fails to load, but out=[" + out + "], err=[" + err + "]"
+        );
 
-        String output = outContent.toString();
-        assertTrue(output.contains("Image could not be loaded or is invalid."),"Expected fallback log for invalid image load, but got: " + output);
+        Image img = coverImage.getImage();
+        assertNotNull(img, "Cover image should default to a placeholder when the primary image fails.");
+        assertFalse(img.isError(), "Placeholder image should load without error.");
     }
 
     /**

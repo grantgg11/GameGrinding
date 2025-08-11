@@ -1,7 +1,11 @@
 package controllers;
 
-import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import javafx.event.ActionEvent;
@@ -147,48 +151,97 @@ public class GameDetailsController extends BaseController {
 
             
             String notes = (getCurrentGame().getNotes() != null) ? getCurrentGame().getNotes() : "No notes available.";
+            
             completionStatusLabel.setText("Completion Status: ");
             notesTextArea.setText(notes);
     		notesTextArea.setWrapText(true);
     		
     		//Load the cover image
-            if (getCurrentGame().getCoverImageUrl() != null && !getCurrentGame().getCoverImageUrl().isEmpty()) {
-                String imagePath = getCurrentGame().getCoverImageUrl();
-                Image image = null;
+    		String imageSrc = getCurrentGame().getCoverImageUrl();
+    		Image img = loadImageFlexible(imageSrc);
 
-                try {
-                	if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-                	    image = new Image(imagePath, true);
-                    } else {
-                        File file = new File(imagePath);
-                        if (file.exists()) {
-                            image = new Image(file.toURI().toString());
-                        } else {
-                            System.err.println("Image file not found at: " + imagePath);
-                        }
-                    }
+    		if (img == null || img.isError()) {
+    		    System.out.println("Primary image failed; using placeholder.");
+    		    img = classpathPlaceholder();
+    		}
 
-                    if (image != null && !image.isError()) {
-                    	coverImage.setImage(image);
-                    	coverImage.setPreserveRatio(true);
-                    	coverImage.setSmooth(true);
-                    	coverImage.setCache(true);
-                    	coverImage.setFitWidth(516);  
-                    	coverImage.setFitHeight(292);    
-                    } else {
-                        System.out.println("Image could not be loaded or is invalid.");
-                    }
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.out.println("Failed to load image from path: " + imagePath);
-                }
-            } else {
-                System.out.println("No cover image available.");
-            }
-
+    		if (img != null && !img.isError()) {
+    		    coverImage.setImage(img);
+    		    coverImage.setPreserveRatio(true);
+    		    coverImage.setSmooth(true);
+    		    coverImage.setCache(true);
+    		    coverImage.setFitWidth(516);
+    		    coverImage.setFitHeight(292);
+    		} else {
+    		    System.err.println("No valid image or placeholder could be loaded.");
+    		}
         }
     }
+    
+    /**
+     * Loads an image from various possible sources.
+     * The method attempts to resolve and load the image in the following order:
+     * 1. If the source string is a valid URL (http, https, file, jar), load it directly.
+     * 2. If the source matches a classpath resource, load it from the classpath.
+     * 3. If the source is a valid filesystem path, load it from disk.
+     * 4. If the source starts with "Images/", attempt to load it from the user's GameGrinding/Images directory in the home folder.
+     * If none of these methods succeed, the method returns null.
+     *
+     * @param src the image source string (URL, classpath path, or filesystem path)
+     * @return the loaded Image object, or null if the image could not be resolved
+     */
+    private Image loadImageFlexible(String src) {
+        if (src == null || src.isBlank()) return null;
+
+        try {
+            URI uri = URI.create(src);
+            if (uri.getScheme() != null) {
+                return new Image(src, true);
+            }
+        } catch (IllegalArgumentException ignore) {
+        }
+
+        String cp = src.startsWith("/") ? src : "/" + src;
+        URL u = getClass().getResource(cp);
+        if (u != null) {
+            return new Image(u.toExternalForm(), true);
+        }
+
+        try {
+            Path p = Paths.get(src);
+            if (Files.exists(p)) {
+                return new Image(p.toUri().toString(), true);
+            }
+        } catch (Exception ignore) {}
+
+        if (src.startsWith("Images/")) {
+            Path userImgPath = Paths.get(System.getProperty("user.home"), "GameGrinding", src);
+            if (Files.exists(userImgPath)) {
+                return new Image(userImgPath.toUri().toString(), true);
+            }
+        }
+
+        System.err.println("Image could not be resolved: " + src);
+        return null;
+    }
+
+
+    /**
+     * Loads a placeholder image from the classpath.
+     * The method randomly selects one of the available placeholder image files stored in the /Images/ directory in the application's resources.
+     * If the selected image is found, it is loaded and returned.
+     * If no placeholder image can be found, the method returns null.
+     *
+     * @return the loaded placeholder Image object, or null if none could be found
+     */
+    private Image classpathPlaceholder() {
+        // Pick one randomly
+        String[] placeholders = {"/Images/placeholder1gameGrinding.png", "/Images/placeholder2gameGrinding.png"};
+        String pick = placeholders[(int)(Math.random() * placeholders.length)];
+        URL u = getClass().getResource(pick);
+        return (u != null) ? new Image(u.toExternalForm(), true) : null;
+    }
+
     
     /**
 	 * Updates the completion status of the game in the database.

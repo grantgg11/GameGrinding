@@ -6,10 +6,14 @@ import static org.mockito.Mockito.*;
 import database.UserDAO;
 import models.user;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+
 import utils.AlertHelper;
 import security.AuthManager;
 import security.PasswordHasher;
+import services.userService.PasswordUpdateResult;
 
  
 /**
@@ -492,60 +496,70 @@ public class userServiceTest {
     /**
 	 * Tests that a weak new password fails validation.
 	 * Validates password strength-checking logic for password updates.
-	 * Supports TC-27 (Password Strength Enforcement).
 	 */
+    @Disabled("Password strength is now validated in the controller, not in userService.")
     @Test
     public void testUpdatePassword_WeakNewPassword() {
         String weakPassword = "abc";
         int userID = 1;
         String inputtedCurrentPassword = "currentPassword123!";
-        boolean result = userServiceUnderTest.updatePassword(userID, weakPassword, inputtedCurrentPassword);
-        assertFalse(result, "Update should fail if the new password is weak.");
+        PasswordUpdateResult result = userServiceUnderTest.updatePassword(userID, weakPassword, inputtedCurrentPassword);
+        // Old: assertFalse(result)
+        // New: this path is controller-level; no assertion here.
+        assertNotNull(result);
     }
 
     /**
      * Makes sure password update fails if the current password input by the user is incorrect. 
-     * Supports TC-20 (Error Handling) and TC-27 (Password Strength Enforcement).
+     * Supports TC-20 (Error Handling).
      */
     @Test
     public void testUpdatePassword_IncorrectCurrentPassword() {
         String strongNewPassword = "StrongPassword1!";
         int userID = 2;
         String inputtedCurrentPassword = "wrongPassword";
+
         when(mockUserDAO.getUserPassword(userID)).thenReturn(PasswordHasher.hashPassword("correctPassword123!"));
-        boolean result = userServiceUnderTest.updatePassword(userID, strongNewPassword, inputtedCurrentPassword);
-        assertFalse(result, "Update should fail if the inputted current password is incorrect.");
+
+        PasswordUpdateResult result = userServiceUnderTest.updatePassword(userID, strongNewPassword, inputtedCurrentPassword);
+
+        assertEquals(PasswordUpdateResult.INCORRECT_CURRENT, result, "Update should fail if the inputted current password is incorrect.");
     }
 
     /**
 	 * Verifies that a valid new password and correct current password result in a successful update.
 	 * Validates the update logic for password changes.
-	 * Supports TC-27 (Password Strength Enforcement).
 	 */
     @Test
     public void testUpdatePassword_UpdateSuccess() {
         String strongNewPassword = "StrongPassword1!";
         int userID = 3;
         String inputtedCurrentPassword = "correctPassword123!";
+
         when(mockUserDAO.getUserPassword(userID)).thenReturn(PasswordHasher.hashPassword(inputtedCurrentPassword));
         when(mockUserDAO.updateUserPassword(eq(userID), anyString())).thenReturn(true);
-        boolean result = userServiceUnderTest.updatePassword(userID, strongNewPassword, inputtedCurrentPassword);
-        assertTrue(result, "Password update should succeed when all conditions are met.");
+
+        PasswordUpdateResult result = userServiceUnderTest.updatePassword(userID, strongNewPassword, inputtedCurrentPassword);
+
+        assertEquals(PasswordUpdateResult.SUCCESS, result, "Password update should succeed when all conditions are met.");
     }
 
     /**
      * Verifies that the update fails if the DAO fails to save the new password. 
-     * Supports TC-20 (Error Handling) and TC-27 (Password Strength Enforcement).
+     * Supports TC-20 (Error Handling).
      */
     @Test
     public void testUpdatePassword_UpdateFailure() {
         String strongNewPassword = "StrongPassword1!";
         int userID = 4;
         String inputtedCurrentPassword = "correctPassword123!";
+
         when(mockUserDAO.getUserPassword(userID)).thenReturn(PasswordHasher.hashPassword(inputtedCurrentPassword));
         when(mockUserDAO.updateUserPassword(eq(userID), anyString())).thenReturn(false);
-        boolean result = userServiceUnderTest.updatePassword(userID, strongNewPassword, inputtedCurrentPassword);
-        assertFalse(result, "Password update should fail if database update fails.");
+
+        PasswordUpdateResult result = userServiceUnderTest.updatePassword(userID, strongNewPassword, inputtedCurrentPassword);
+
+        assertEquals(PasswordUpdateResult.UPDATE_FAILED, result, "Password update should fail if database update fails.");
     }
 
     /**
@@ -557,9 +571,246 @@ public class userServiceTest {
         String strongNewPassword = "StrongPassword1!";
         int userID = 5;
         String inputtedCurrentPassword = "correctPassword123!";
-        when(mockUserDAO.getUserPassword(userID)).thenThrow(new RuntimeException("DB error"));
-        boolean result = userServiceUnderTest.updatePassword(userID, strongNewPassword, inputtedCurrentPassword);
-        assertFalse(result, "Password update should fail and catch exception if anything goes wrong.");
+
+        when(mockUserDAO.getUserPassword(userID)) .thenThrow(new RuntimeException("DB error"));
+        PasswordUpdateResult result = userServiceUnderTest.updatePassword(userID, strongNewPassword, inputtedCurrentPassword);
+        assertEquals(PasswordUpdateResult.ERROR, result, "Password update should return ERROR if anything goes wrong.");
     }
+    
+    
+    
+    ///////////////////////////////// testing updateForgottenPassword() /////////////////////////////////
+    
+    /**
+     * Ensures a successful DAO update returns true and that the stored password is a hash
+     * (not the plaintext). Also verifies the hash matches the new password using PasswordHasher.
+     * Supports TC-20 (Error Handling) and TC-27 (Security – Password Storage).
+     */
+    @Test
+    public void testUpdateForgottenPassword_Success_StoresHashedPassword() {
+        int userID = 42;
+        String newPassword = "NewStrongPass1!";
+        when(mockUserDAO.updateUserPassword(eq(userID), org.mockito.ArgumentMatchers.anyString()))
+            .thenReturn(true);
+        boolean result = userServiceUnderTest.updateForgottenPassword(userID, newPassword);
+        assertTrue(result, "Expected true when DAO updateUserPassword succeeds.");
+
+        ArgumentCaptor<String> hashCaptor = ArgumentCaptor.forClass(String.class);
+        verify(mockUserDAO).updateUserPassword(eq(userID), hashCaptor.capture());
+        String storedHash = hashCaptor.getValue();
+
+        assertNotEquals(newPassword, storedHash, "Password must not be stored as plaintext.");
+
+        assertTrue(PasswordHasher.verifyPassword(newPassword, storedHash), "Stored hash should verify against the provided new password."
+        );
+    }
+
+    /**
+     * Verifies updateForgottenPassword returns false when the DAO fails to update the password.
+     * Supports TC-20 (Error Handling).
+     */
+    @Test
+    public void testUpdateForgottenPassword_DaoFailure_ReturnsFalse() {
+        int userID = 7;
+        String newPassword = "AnotherStrong1!";
+        when(mockUserDAO.updateUserPassword(eq(userID), org.mockito.ArgumentMatchers.anyString())).thenReturn(false);
+        boolean result = userServiceUnderTest.updateForgottenPassword(userID, newPassword);
+        assertFalse(result, "Expected false when DAO updateUserPassword returns false.");
+    }
+
+    /**
+     * Ensures exceptions thrown by the DAO are caught and the method fails gracefully (returns false).
+     * Supports TC-20 (Error Handling).
+     */
+    @Test
+    public void testUpdateForgottenPassword_ExceptionThrown() {
+        int userID = 99;
+        String newPassword = "Catcher1!";
+        when(mockUserDAO.updateUserPassword(eq(userID), org.mockito.ArgumentMatchers.anyString())).thenThrow(new RuntimeException("DB error"));
+
+        boolean result = userServiceUnderTest.updateForgottenPassword(userID, newPassword);
+        assertFalse(result, "Expected false when an exception occurs during password update.");
+    }
+
+    /**
+     * Explicitly validates that hashing is performed before persistence by capturing the DAO argument,
+     * confirming it differs from plaintext, and verifying with PasswordHasher.
+     * Supports TC-27 (Security – Password Storage).
+     */
+    @Test
+    public void testUpdateForgottenPassword_UsesHashingBeforePersist() {
+        int userID = 11;
+        String newPassword = "HashCheck1@";
+
+        when(mockUserDAO.updateUserPassword(eq(userID), org.mockito.ArgumentMatchers.anyString())).thenReturn(true);
+
+        boolean result = userServiceUnderTest.updateForgottenPassword(userID, newPassword);
+        assertTrue(result, "Expected true when DAO update succeeds.");
+
+        ArgumentCaptor<String> hashCaptor = ArgumentCaptor.forClass(String.class);
+        verify(mockUserDAO).updateUserPassword(eq(userID), hashCaptor.capture());
+        String storedHash = hashCaptor.getValue();
+
+        assertNotEquals(newPassword, storedHash, "Password must not be stored in plaintext.");
+        assertTrue(PasswordHasher.verifyPassword(newPassword, storedHash), "Hashed password persisted should verify against the original new password."
+        );
+    }
+    
+    /////////////////////// testing getUserByID() ///////////////////////
+    
+    /**
+     * Makes sure that getUserByID() returns the correct user object when the user exists.
+     */
+    @Test
+    public void testGetUserByID_UserExists_ReturnsUserObject() {
+        int userID = 10;
+        user mockUser = new user();
+        mockUser.setUserID(userID);
+        mockUser.setUsername("testUser");
+        when(mockUserDAO.getUserByID(userID)).thenReturn(mockUser);
+
+        user result = userServiceUnderTest.getUserByID(userID);
+
+        assertNotNull(result, "Expected non-null user when the user exists.");
+        assertEquals(userID, result.getUserID(), "Returned user ID should match the requested ID.");
+        assertEquals("testUser", result.getUsername(), "Returned username should match.");
+    }
+
+    /**
+     * Ensures getUserByID() returns null when no user exists for the given ID.
+     * Supports TC-20 (Error Handling).
+     */
+    @Test
+    public void testGetUserByID_UserDoesNotExist_ReturnsNull() {
+        int userID = 99;
+        when(mockUserDAO.getUserByID(userID)).thenReturn(null);
+
+        user result = userServiceUnderTest.getUserByID(userID);
+
+        assertNull(result, "Expected null when the user does not exist.");
+    }
+    
+    /////////////////////////// testing getUserByEmail() ///////////////////////////
+    
+    
+    /**
+     * Makes sure that getUserByEmail() returns the correct user object when the email exists in the database.
+     */
+    @Test
+    public void testGetUserByEmail_EmailExists_ReturnsUserObject() {
+        String email = "test@example.com";
+        user mockUser = new user();
+        mockUser.setUserID(1);
+        mockUser.setUsername("testUser");
+        mockUser.setEmail(email);
+        when(mockUserDAO.getUserByEmail(email)).thenReturn(mockUser);
+
+        user result = userServiceUnderTest.getUserByEmail(email);
+
+        assertNotNull(result, "Expected non-null user when the email exists.");
+        assertEquals(email, result.getEmail(), "Returned email should match the requested email.");
+        assertEquals("testUser", result.getUsername(), "Returned username should match.");
+    }
+
+    /**
+     * Makes sure that getUserByEmail() returns null when the email does not exist in the database.
+     * TC-20 (Error Handling).
+     */
+    @Test
+    public void testGetUserByEmail_EmailDoesNotExist_ReturnsNull() {
+        String email = "missing@example.com";
+        when(mockUserDAO.getUserByEmail(email)).thenReturn(null);
+
+        user result = userServiceUnderTest.getUserByEmail(email);
+
+        assertNull(result, "Expected null when the email does not exist.");
+    }
+
+    /**
+     * Ensures getUserByEmail() returns null when the provided email is null or empty.
+     * Supports TC-20 (Error Handling).
+     */
+    @Test
+    public void testGetUserByEmail_NullOrEmptyEmail_ReturnsNull() {
+        assertNull(userServiceUnderTest.getUserByEmail(null), "Expected null when email is null.");
+        assertNull(userServiceUnderTest.getUserByEmail(""), "Expected null when email is empty.");
+    }
+ 
+    
+    /////////////////////// testing verifySecurityAnswers() ///////////////////////
+    
+    /**
+     * Ensures verifySecurityAnswers() returns true when all three security answers match the stored values.
+     */
+    @Test
+    public void testVerifySecurityAnswers_AllAnswersMatch_ReturnsTrue() {
+        int userID = 1;
+        String answer1 = "petName";
+        String answer2 = "motherMaiden";
+        String answer3 = "favoriteColor";
+
+        user mockUser = new user();
+        mockUser.setSecurityAnswer1(PasswordHasher.hashPassword(answer1));
+        mockUser.setSecurityAnswer2(PasswordHasher.hashPassword(answer2));
+        mockUser.setSecurityAnswer3(PasswordHasher.hashPassword(answer3));
+
+        when(mockUserDAO.getUserSecurityAnswers(userID)).thenReturn(mockUser);
+
+        boolean result = userServiceUnderTest.verifySecurityAnswers(userID, answer1, answer2, answer3);
+
+        assertTrue(result, "Expected true when all answers match.");
+    }
+
+    /**
+     * Makes sure that verifySecurityAnswers() returns false when at least one security answer does not match.
+     */
+    @Test
+    public void testVerifySecurityAnswers_OneOrMoreAnswersMismatch_ReturnsFalse() {
+        int userID = 2;
+        String answer1 = "petName";
+        String answer2 = "wrongAnswer";
+        String answer3 = "favoriteColor";
+
+        user mockUser = new user();
+        mockUser.setSecurityAnswer1(PasswordHasher.hashPassword(answer1));
+        mockUser.setSecurityAnswer2(PasswordHasher.hashPassword("motherMaiden"));
+        mockUser.setSecurityAnswer3(PasswordHasher.hashPassword(answer3));
+
+        when(mockUserDAO.getUserSecurityAnswers(userID)).thenReturn(mockUser);
+
+        boolean result = userServiceUnderTest.verifySecurityAnswers(userID, answer1, answer2, answer3);
+
+        assertFalse(result, "Expected false when one or more answers are incorrect.");
+    }
+
+    /**
+     * Checks that verifySecurityAnswers() returns false when the user is not found in the database.
+     * Supports TC-20 (Error Handling).
+	 */
+    @Test
+    public void testVerifySecurityAnswers_UserNotFound_ReturnsFalse() {
+        int userID = 99;
+        when(mockUserDAO.getUserSecurityAnswers(userID)).thenReturn(null);
+
+        boolean result = userServiceUnderTest.verifySecurityAnswers(userID, "a1", "a2", "a3");
+
+        assertFalse(result, "Expected false when the user is not found.");
+    }
+
+    /**
+     * Ensures verifySecurityAnswers() returns false when an exception occurs during verification.
+     * Supports TC-20 (Error Handling).
+     */
+    @Test
+    public void testVerifySecurityAnswers_ExceptionThrown_ReturnsFalse() {
+        int userID = 3;
+        when(mockUserDAO.getUserSecurityAnswers(userID)).thenThrow(new RuntimeException("DB error"));
+
+        boolean result = userServiceUnderTest.verifySecurityAnswers(userID, "a1", "a2", "a3");
+
+        assertFalse(result, "Expected false when an exception is thrown.");
+    }
+
+    
 }
 
