@@ -14,7 +14,22 @@
 target/
 runtime/
 output/
+META-INF/
+bin/
+dependency-reduced-pom.xml
+jpackage-log.txt
+
+# ===== Logs & Exports =====
+logs/
+exports/
 *.log
+
+# ===== Databases =====
+*.db
+*.db;
+
+# ===== Images =====
+Images/
 
 # ===== OS-generated Files =====
 .DS_Store
