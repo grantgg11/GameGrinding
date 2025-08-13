@@ -63,8 +63,7 @@ public class PerformanceTracker {
      * @return Total number of GC events (across all GC beans).
      */
     public int getGCEvents() {
-        return java.lang.management.ManagementFactory.getGarbageCollectorMXBeans()
-                .stream().mapToInt(bean -> (int) bean.getCollectionCount()).sum();
+        return java.lang.management.ManagementFactory.getGarbageCollectorMXBeans().stream().mapToInt(bean -> (int) bean.getCollectionCount()).sum();
     }
 
 }

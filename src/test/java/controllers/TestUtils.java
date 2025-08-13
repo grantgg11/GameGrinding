@@ -13,8 +13,27 @@ import javafx.application.Platform;
 import javafx.stage.Stage; 
 
 /**
- * Utility class for performing reflection-based operations and generating test data
- * for use in unit and UI tests in the GameGrinding application.
+ * TestUtils provides reflection helpers, JavaFX threading utilities, and test data builders
+ * used across unit and UI (TestFX) tests in the GameGrinding application.
+ *
+ * This utility class supports:
+ * - Reflection-based field access:
+ *   - setPrivateField(...) to inject dependencies or UI nodes into controllers under test.
+ *   - getPrivateField(...) to retrieve internal state for assertions.
+ *   - setStaticField(...) to override static fields during tests.
+ * - Reflection-based method invocation:
+ *   - invokePrivateMethod(...) overloads to call private methods with/without parameters and
+ *     optionally capture return values, walking the class hierarchy as needed.
+ * - JavaFX/test orchestration:
+ *   - preloadGameCollection(...) to seed a GameCollectionController on the JavaFX Application
+ *     Thread using Platform.runLater(...) and WaitForAsyncUtils to flush FX events deterministically.
+ *   - getPopupStage(...) to extract a private Stage reference for popup-based UI assertions.
+ * - Test data factories:
+ *   - generateMockGames(int) to build lists of lightweight game objects.
+ *   - createTestGame() to return a canonical single game instance for focused scenarios.
+ *
+ * Error handling in reflection helpers wraps checked exceptions in RuntimeException with clear
+ * context, simplifying call sites while preserving failure details for debugging.
  */
 public class TestUtils {
 	
@@ -261,7 +280,4 @@ public class TestUtils {
 
             WaitForAsyncUtils.waitForFxEvents();
         }
-    
-
-
 }

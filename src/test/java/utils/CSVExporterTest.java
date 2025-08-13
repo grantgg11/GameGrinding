@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * 
  * Each test uses a temporary file for safe, isolated testing.
  */
-
 class CSVExporterTest {
 
     private CSVExporter exporter;

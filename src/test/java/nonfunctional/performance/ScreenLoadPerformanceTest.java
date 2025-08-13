@@ -21,9 +21,15 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 /**
- * Non-functional UI Test (US-1): 
- * Ensures that key application screens load within 2 seconds under typical usage conditions.
- * This test class uses TestFX and JUnit 5 to simulate user interactions and measure screen load times.
+ * ScreenLoadPerformanceTest validates non-functional requirement US-1: key UI screens
+ * must load within 2 seconds under typical conditions.
+ *
+ * Using TestFX with assertTimeoutPreemptively, it measures load times for:
+ * - Add Game (API) and Manual Add Game (with per-step timing logs)
+ * - Filter Collection, Game Details, Settings, and Help screens
+ *
+ * The suite bootstraps GameCollection via @Start, preloads sample data, waits for FX events,
+ * and asserts both reachability of key nodes and sub-2s load targets.
  */
 @ExtendWith(ApplicationExtension.class)
 public class ScreenLoadPerformanceTest {

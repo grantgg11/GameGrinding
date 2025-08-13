@@ -10,9 +10,17 @@ import models.user;
 import database.UserDAO;
 import org.junit.jupiter.api.*;
 
-/** 
- * Non-functional test for verifying data persistence across sessions (US-6).
- * Simulates closing and reopening the app by using two DAO instances.
+/**
+ * UserDataPersistenceTest verifies non-functional requirement US-6: data persists across sessions.
+ *
+ * It uses an in-memory SQLite DB initialized once (@BeforeAll) and ordered tests to simulate
+ * app close/reopen by creating two UserDAO “sessions”:
+ * - testInsertUserInFirstSession (Order 1): inserts a user and records the returned ID.
+ * - testRetrieveUserInNewSession (Order 2): creates a new DAO, retrieves by ID, and asserts
+ *   username, password, and default role are intact.
+ *
+ * The suite confirms schema setup, cross-session persistence via a shared Connection, and
+ * proper teardown of resources (@AfterAll).
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class UserDataPersistenceTest {

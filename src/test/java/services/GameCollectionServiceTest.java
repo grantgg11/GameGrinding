@@ -25,10 +25,36 @@ import security.AuthManager;
 import utils.AlertHelper;
 
 /**
- * This test class validates the functionality of the GameCollectionService class, which is responsible for managing the user's game collection.
- * These tests correspond to many functional test cases defined in the test plan. 
- * Test cases include TC-4 (Add Game through API), TC-6 (Remove Game), TC-10 (Search Game in Collection), TC-12 (Sort), TC-19 (Filter).
- * This class uses Mockito to mock DAO interactions and confirms expected outcomes.
+ * GameCollectionServiceTest contains unit tests for verifying the functionality of the
+ * GameCollectionService class in the GameGrinding application.
+ *
+ * This test class ensures that:
+ * - The singleton pattern is correctly implemented, returning the same instance across multiple calls.
+ * - User session handling methods (setCurrentUserID and getCurrentUserID) store and retrieve IDs reliably.
+ * - The addGameToCollection workflow validates input, handles null or invalid data, and interacts with the
+ *   CollectionDAO appropriately for both successful and failed scenarios, including DAO errors.
+ * - Collection retrieval methods (getUserCollection) correctly return game lists or empty lists in cases
+ *   of invalid input, empty collections, or DAO null responses.
+ * - Sorting methods (sortCollection and sortFilteredCollection) correctly order games by title, platform,
+ *   or release date, handle null values gracefully, and avoid altering the list for invalid sort criteria.
+ * - Game removal operations (removeGameFromCollection) validate IDs, handle DAO failures, and prevent
+ *   unintended deletions for invalid input.
+ * - Filtering methods (filterCollection) apply combinations of genre, platform, and completion status filters,
+ *   handle empty or null filters correctly, and safely return results for invalid user IDs without DAO calls.
+ * - Searching methods (searchCollection) retrieve results by title, handle empty or invalid input, and
+ *   account for DAO null returns without crashing.
+ *
+ * The tests map directly to functional test cases in the project’s test plan, including:
+ * - TC-4 (Add Game through API)
+ * - TC-6 (Remove Game)
+ * - TC-7 (View Collection)
+ * - TC-10 (Search Game in Collection)
+ * - TC-12 (Sort)
+ * - TC-19 (Filter)
+ *
+ * Mockito is used to mock dependencies such as CollectionDAO and AlertHelper, isolating service logic from
+ * database and UI components. Tests confirm both positive and negative scenarios, ensuring that
+ * GameCollectionService provides consistent, fault-tolerant behavior for managing a user's game collection.
  */
 class GameCollectionServiceTest {
 	

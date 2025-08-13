@@ -28,7 +28,7 @@ public class CollectionDAO {
         this.connection = new DatabaseManager().getConnection();
     }
 
-    // Optional: test-only constructor
+    // test-only constructor
     public CollectionDAO(Connection connection) {
         this.connection = connection;
     }
@@ -99,7 +99,7 @@ public class CollectionDAO {
 	        // Check if user already owns the game
 	        if (userAlreadyHasGame(userID, newGameID)) {
 	            System.out.println("User already owns this game, skipping collection insert.");
-	            connection.commit(); // Commit if game insert happened
+	            connection.commit(); 
 	            return false;
 	        }
 
@@ -139,7 +139,6 @@ public class CollectionDAO {
 	            statement1.setInt(1, userID);
 	            statement1.setInt(2, gameID);
 	            statement1.executeUpdate();
-	            //Delete game from Game table
 	            statement2.setInt(1, gameID);
 	            int rowsAffected = statement2.executeUpdate();
 	            connection.commit();
@@ -478,7 +477,7 @@ public class CollectionDAO {
 	                resultSet.getString("Publisher"),
 	                releaseDate,
 	                resultSet.getString("Genre"),
-	                resultSet.getString("Platform"),  // Ensure this contains multiple values correctly
+	                resultSet.getString("Platform"),  
 	                resultSet.getString("CompletionStatus"),
 	                resultSet.getString("Notes"),
 	                resultSet.getString("CoverArt")
@@ -548,7 +547,6 @@ public class CollectionDAO {
 	        stmt.setString(2, title);
 	        int affected = stmt.executeUpdate();
 
-	        // Optionally delete orphaned games (only in test environments)
 	        try (PreparedStatement cleanup = connection.prepareStatement(deleteOrphanedGames)) {
 	            cleanup.executeUpdate();
 	        }

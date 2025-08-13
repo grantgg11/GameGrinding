@@ -6,8 +6,22 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 
 /**
- * Utility class for displaying JavaFX alert dialogs in a standardized way.
- * Provides methods to show error, information, and custom multi-line alerts.
+ * AlertHelper provides utility methods for displaying standardized JavaFX alert dialogs
+ * throughout the GameGrinding application.
+ * 
+ * This class is responsible for:
+ * - Displaying error alerts to inform the user when an operation fails or input is invalid.
+ * - Displaying informational alerts to confirm successful actions or provide general updates.
+ * - Displaying multi-line alerts when there are multiple messages to present to the user
+ *   in a single dialog.
+ * 
+ * Key features:
+ * - Uses JavaFX's Alert class with preconfigured alert types (ERROR and INFORMATION).
+ * - Supports custom titles, headers, and content messages for flexibility.
+ * - Allows passing multiple messages as a list, which are joined into a single multi-line string.
+ * 
+ * This class ensures that all alerts across the application have a consistent look and behavior,
+ * improving user experience and reducing repetitive alert setup code in controllers and services.
  */
 public class AlertHelper {
 	

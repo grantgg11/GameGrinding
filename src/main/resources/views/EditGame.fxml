@@ -17,6 +17,31 @@
 <?import javafx.scene.effect.GaussianBlur?>
 <?import javafx.scene.shape.Line?>
 
+<!--
+    EditGame.fxml defines the JavaFX layout for the "Edit Game" screen in the GameGrinding application.
+
+    Purpose:
+    Provides a UI for updating an existing game's details, including title, developer, publisher,
+    release date, genre(s), platform(s), completion status, personal notes, and cover art.
+
+    Key Components:
+    - Text fields for core game attributes (title, developer, publisher, release date, genres, platforms).
+    - ChoiceBox for selecting completion status.
+    - TextArea for entering personal notes.
+    - Image selection section with a browse button, file path label, and preview ImageView.
+    - Submit button for saving changes via handleSaveButtonClick in EditGameController.
+    - Navigation buttons (Game Collection, Settings, Help) with associated icons.
+    - Decorative and structural UI elements (rectangles, lines, shadows, and images) for layout styling.
+
+    Controller:
+    Controlled by controllers.EditGameController, which manages form population, validation, 
+    event handling, and saving changes to the database.
+
+    Navigation:
+    Includes quick access to other sections of the application through sidebar buttons,
+    preserving consistent navigation and visual design across screens.
+-->
+
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1280.0" xmlns="http://javafx.com/javafx/17.0.13" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.EditGameController">
    <children>
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#faf3f3" height="642.0" layoutX="135.0" layoutY="130.0" stroke="BLACK" strokeType="INSIDE" width="1098.0">
@@ -189,6 +214,14 @@
          </Button>
       <Line endX="147.0" layoutX="21.0" layoutY="141.0" startX="-5.5" stroke="WHITE" />
       <Line endX="100.0" layoutX="67.0" layoutY="313.0" startX="-46.0" stroke="WHITE" />
+            <Button fx:id="logoutButton" layoutX="12.0" layoutY="760.0" mnemonicParsing="false" onAction="#handleLogoutButton" style="-fx-background-color: transparent;" text="Logout" textFill="WHITE">
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+         <font>
+            <Font name="System Bold Italic" size="12.0" />
+         </font>
+      </Button>
     </children>
       
 </AnchorPane>

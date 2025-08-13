@@ -17,7 +17,6 @@ import static org.mockito.Mockito.*;
  * This class ensures that the overlay is properly created and displayed using JavaFX stages.
  * It initializes the JavaFX runtime and verifies that the overlay window behaves as expected.
  */
-
 public class LoadingOverlayTest {
 
 	/**

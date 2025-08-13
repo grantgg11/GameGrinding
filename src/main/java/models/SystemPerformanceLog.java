@@ -69,6 +69,9 @@ public class SystemPerformanceLog {
         }
     }
 
+    //------------------- Getters and Setters for Performance Metrics ------------------
+    
+    
     public int getScreenLoadTime() { 
     	return screenLoadTime; 
     	}

@@ -23,8 +23,28 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * Service class to interact with the MobyGames API for retrieving and parsing video game metadata.
- * Supports game searching, fetching detailed game and platform info, rate limiting, caching, and API logging.
+ * mobyGamesAPIService is responsible for interacting with the MobyGames API to
+ * retrieve, parse, and process video game metadata for the GameGrinding application.
+ * 
+ * This service supports:
+ * - Searching games by title and retrieving detailed game data, including developer,
+ *   publisher, platform, genre, release date, and cover image.
+ * - Fetching and caching detailed platform information to reduce API calls and improve performance.
+ * - Parsing API responses into application-specific game objects.
+ * - Enforcing API rate limits to comply with MobyGames usage policies.
+ * - Logging API requests, including response times, status, and errors, for monitoring
+ *   and performance tracking.
+ * - Displaying relevant alerts to users when API calls fail or response times exceed thresholds.
+ * 
+ * Key features include:
+ * - Asynchronous and concurrent fetching of game and platform details with controlled concurrency.
+ * - Response caching for both game and platform data to optimize repeated lookups.
+ * - Graceful error handling with SLF4J logging and user-facing alert messages.
+ * 
+ * This class relies on helper utilities such as JSONParser for HTTP requests and
+ * JSON parsing, AlertHelper for UI messages, and APIRequestLogger for recording
+ * request statistics in the database. It works closely with the userService to
+ * associate API logs with the current user session.
  */
 public class mobyGamesAPIService {
 

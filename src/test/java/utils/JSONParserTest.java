@@ -24,7 +24,6 @@ import static org.mockito.Mockito.*;
  * rate limiting, exceeding retry attempts, and error responses. Also validates
  * JSON parsing logic using GSON.
  */
-
 @ExtendWith(MockitoExtension.class)
 class JSONParserTest {
 

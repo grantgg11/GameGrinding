@@ -39,7 +39,6 @@ import javafx.scene.Parent;
  * adding games, editing game details, navigating to Help and Settings, and logging out
  * are accessible in 2 to 3 steps/clicks from the main Game Collection screen.
  */
-
 @ExtendWith(ApplicationExtension.class)
 public class PrimaryActionClickPathTest {
 

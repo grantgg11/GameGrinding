@@ -21,7 +21,6 @@ import models.user;
  *
  * The tests use Mockito to mock dependencies such as UserDAO and Hasher.
  */
-
 public class AuthManagerTest {
  
     private AuthManager authManager;

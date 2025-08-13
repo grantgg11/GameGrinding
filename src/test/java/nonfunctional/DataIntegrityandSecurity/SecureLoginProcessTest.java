@@ -14,8 +14,17 @@ import services.userService;
 import utils.AlertHelper;
 
 /**
- * Non-functional test for secure login process (US-8).
- * Verifies login using email and password is enforced securely.
+ * SecureLoginProcessTest verifies the security of the user login process (US-8) in the
+ * GameGrinding application.
+ *
+ * Tests cover:
+ * - Successful login with valid credentials, ensuring password hashing, credential verification,
+ *   and correct session state.
+ * - Login failure for incorrect passwords, invalid email formats, and empty or null credentials.
+ *
+ * Using mocked UserDAO, AuthManager, and AlertHelper dependencies, these tests isolate authentication
+ * logic from the database while ensuring secure input validation, proper session handling, and compliance
+ * with non-functional security requirements.
  */
 public class SecureLoginProcessTest {
 

@@ -36,9 +36,33 @@ import utils.CSVExporter;
 import utils.KeyStorage;
 
 /**
- * Test class for SettingsController. Verifies the functionality of 
- * user settings management, encryption info display, navigation logic, 
- * account/password updates, and report exporting using mocked dependencies.
+ * SettingControllerTest contains unit tests for verifying the functionality of the
+ * SettingsController class in the GameGrinding application.
+ *
+ * This test class ensures that:
+ * - Initialization logic honors role-based UI (e.g., Admin-only Reports button visibility) and
+ *   safely handles missing controls.
+ * - User data loading populates fields correctly, including decrypting the stored email, and
+ *   gracefully handles service/decryption failures without crashing.
+ * - Account updates call userService with trimmed inputs and show the correct alerts or messages
+ *   on success/failure.
+ * - Password updates perform comprehensive client-side validation (required fields, matching
+ *   new/current passwords, strength checks), aggregate validation errors into a single alert,
+ *   and map service results (SUCCESS, INCORRECT_CURRENT, UPDATE_FAILED, ERROR) to appropriate
+ *   user feedback; fields are cleared on success.
+ * - The Encryption Info section is dynamically populated with the expected styled labels in
+ *   the VBox container.
+ * - Navigation handlers (Collection, Settings, Help, Logout) invoke NavigationHelper correctly,
+ *   and exceptions in navigation/logout are caught and surfaced via alerts without app crashes.
+ * - Report exporting retrieves data from ReportDAO, writes CSVs via CSVExporter (creating the
+ *   export directory if needed), and surfaces success/error states through alerts.
+ *
+ * The tests use Mockito to mock dependencies such as userService, Encryption, ReportDAO,
+ * CSVExporter, KeyStorage, AlertHelper, and NavigationHelper, isolating controller behavior.
+ * JavaFXThreadingExtension is used to run JavaFX code safely in tests.
+ * The goal is to validate SettingsController’s data loading, security/encryption messaging,
+ * account & password management, report export workflow, and navigation/alert handling for a
+ * reliable end-user experience.
  */
 @ExtendWith(JavaFXThreadingExtension.class)
 class SettingControllerTest {
@@ -315,7 +339,6 @@ class SettingControllerTest {
         currentPasswordField.setText("old123");
         currentPasswordField2.setText("old123");
 
-        // Strength isn’t the point of this test; avoid extra error lines:
         when(mockUserService.isPasswordStrong(anyString())).thenReturn(true);
 
         controller.handleSavePassword();
@@ -336,7 +359,7 @@ class SettingControllerTest {
     @Test
     void testHandleSavePassword_newPasswordsMismatch_shouldShowAggregatedError() {
         newPasswordField.setText("new123");
-        confirmPasswordField.setText("new456"); // mismatch
+        confirmPasswordField.setText("new456"); 
         currentPasswordField.setText("old123");
         currentPasswordField2.setText("old123");
 
@@ -361,7 +384,7 @@ class SettingControllerTest {
         newPasswordField.setText("new123");
         confirmPasswordField.setText("new123");
         currentPasswordField.setText("old123");
-        currentPasswordField2.setText("wrongOld123"); // mismatch
+        currentPasswordField2.setText("wrongOld123");
 
         when(mockUserService.isPasswordStrong(anyString())).thenReturn(true);
 
@@ -404,13 +427,12 @@ class SettingControllerTest {
      */
     @Test
     void testHandleSavePassword_multipleClientSideErrors_singleAlert_noServiceCall() {
-        newPasswordField.setText("");                 // empty
-        confirmPasswordField.setText("new456");       // mismatch with new
+        newPasswordField.setText("");                 
+        confirmPasswordField.setText("new456");      
         currentPasswordField.setText("old123");
-        currentPasswordField2.setText("wrongOld123"); // mismatch with current
+        currentPasswordField2.setText("wrongOld123"); 
 
-        when(mockUserService.isPasswordStrong("")).thenReturn(false); // not required, but fine
-
+        when(mockUserService.isPasswordStrong("")).thenReturn(false); 
         controller.handleSavePassword();
 
         verify(mockAlertHelper, times(1)).showError(
@@ -435,8 +457,7 @@ class SettingControllerTest {
         currentPasswordField2.setText("old123");
 
         when(mockUserService.isPasswordStrong("StrongPassword1!")).thenReturn(true);
-        when(mockUserService.updatePassword(1, "StrongPassword1!", "old123"))
-            .thenReturn(PasswordUpdateResult.SUCCESS);
+        when(mockUserService.updatePassword(1, "StrongPassword1!", "old123")).thenReturn(PasswordUpdateResult.SUCCESS);
 
         controller.handleSavePassword();
 
@@ -465,8 +486,7 @@ class SettingControllerTest {
         currentPasswordField2.setText("old123");
 
         when(mockUserService.isPasswordStrong("StrongPassword1!")).thenReturn(true);
-        when(mockUserService.updatePassword(1, "StrongPassword1!", "old123"))
-            .thenReturn(PasswordUpdateResult.INCORRECT_CURRENT);
+        when(mockUserService.updatePassword(1, "StrongPassword1!", "old123")).thenReturn(PasswordUpdateResult.INCORRECT_CURRENT);
 
         controller.handleSavePassword();
 
@@ -489,8 +509,7 @@ class SettingControllerTest {
         currentPasswordField2.setText("old123");
 
         when(mockUserService.isPasswordStrong("StrongPassword1!")).thenReturn(true);
-        when(mockUserService.updatePassword(1, "StrongPassword1!", "old123"))
-            .thenReturn(PasswordUpdateResult.UPDATE_FAILED);
+        when(mockUserService.updatePassword(1, "StrongPassword1!", "old123")).thenReturn(PasswordUpdateResult.UPDATE_FAILED);
 
         controller.handleSavePassword();
 
@@ -513,8 +532,7 @@ class SettingControllerTest {
         currentPasswordField2.setText("old123");
 
         when(mockUserService.isPasswordStrong("StrongPassword1!")).thenReturn(true);
-        when(mockUserService.updatePassword(1, "StrongPassword1!", "old123"))
-            .thenReturn(PasswordUpdateResult.ERROR);
+        when(mockUserService.updatePassword(1, "StrongPassword1!", "old123")).thenReturn(PasswordUpdateResult.ERROR);
 
         controller.handleSavePassword();
 
@@ -537,8 +555,7 @@ class SettingControllerTest {
         currentPasswordField2.setText("old123   ");
 
         when(mockUserService.isPasswordStrong("StrongPassword1!")).thenReturn(true);
-        when(mockUserService.updatePassword(1, "StrongPassword1!", "old123"))
-            .thenReturn(PasswordUpdateResult.SUCCESS);
+        when(mockUserService.updatePassword(1, "StrongPassword1!", "old123")).thenReturn(PasswordUpdateResult.SUCCESS);
 
         controller.handleSavePassword();
 
@@ -856,8 +873,7 @@ class SettingControllerTest {
         NavigationHelper mockNavHelp = mock(NavigationHelper.class);
         AlertHelper mockAlertHelper = mock(AlertHelper.class);
 
-        doThrow(new RuntimeException("Navigation failure"))
-            .when(mockNavHelp).switchToLoginPage(mockLogoutButton);
+        doThrow(new RuntimeException("Navigation failure")).when(mockNavHelp).switchToLoginPage(mockLogoutButton);
 
         TestUtils.setPrivateField(controller, "userSer", mockUserService);
         TestUtils.setPrivateField(controller, "navHelp", mockNavHelp);

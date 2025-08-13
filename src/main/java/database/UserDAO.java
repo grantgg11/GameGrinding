@@ -14,10 +14,27 @@ import javax.crypto.SecretKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * DAO class responsible for CRUD operations related to users.
- * Includes encrypted email handling, password hashing, and security questions.
- */
+/*
+* UserDAO manages all database interactions related to users in the GameGrinding application.
+* It provides methods to create, read, update, and delete user records (CRUD operations).
+*
+* This class integrates several security measures:
+* - Encrypts user email addresses before storing or searching, using AES encryption.
+* - Supports storing hashed passwords for secure authentication.
+* - Handles retrieval and storage of security questions and answers for account recovery.
+*
+* Key responsibilities:
+* - Insert new users with encrypted email and hashed passwords.
+* - Retrieve users by email or ID, including their login credentials or security answers.
+* - Update user account details such as username, email, and password.
+* - Delete users from the database based on their email.
+*
+* UserDAO can operate with any valid JDBC connection, allowing it to work with both
+* the production database and an in-memory test database. 
+*
+* All database operations use prepared statements to prevent SQL injection and
+* include error logging through SLF4J for better troubleshooting and monitoring.
+*/
 public class UserDAO {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ReportDAO.class);
@@ -168,7 +185,6 @@ public class UserDAO {
                 throw new SQLException("Creating user failed, no rows affected.");
             }
 
-            // **Fix**: Retrieve generated userID
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     return generatedKeys.getInt(1); 

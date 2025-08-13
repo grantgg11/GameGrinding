@@ -15,8 +15,7 @@ import org.junit.jupiter.api.Test;
  *
  * This test class verifies the behavior of database connection management logic
  * provided by the DatabaseManager class. It covers both test mode (in-memory SQLite)
- * and production mode (standard JDBC SQLite connections), ensuring that the connection
- * logic is reliable, efficient, and resilient to SQL exceptions.
+ * and production mode (standard JDBC SQLite connections).
  */
 class DatabaseManagerTest {
 

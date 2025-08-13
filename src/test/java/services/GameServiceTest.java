@@ -17,17 +17,30 @@ import database.GameDAO;
 import utils.AlertHelper;
 
 /**
- * Unit tests for the GameService class.
+ * GameServiceTest contains unit tests for verifying the functionality of the
+ * GameService class in the GameGrinding application.
  *
- * This test suite verifies the behavior of the GameService class,
- * which acts as an intermediary layer between the controller or user interface
- * and data access objects for managing user game collections.
+ * This test class ensures that:
+ * - All game update operations (completion status, notes, cover image URL, release date,
+ *   genre, developer, publisher, title, and platform) validate inputs, interact with the
+ *   GameDAO correctly, and return expected results for both success and failure scenarios.
+ * - Input validation correctly rejects invalid IDs, empty strings, malformed URLs, and
+ *   improperly formatted dates without invoking DAO operations unnecessarily.
+ * - Retrieval methods for cover image URLs, available platforms, and genres work as expected,
+ *   returning DAO results, handling null or empty responses gracefully, and avoiding crashes.
+ * - Platform and genre retrieval methods use the CollectionDAO to gather collection-specific
+ *   data and handle invalid user IDs by returning empty lists without DAO calls.
+ * - Data integrity is preserved by ensuring that update methods only proceed when inputs
+ *   pass validation checks, preventing unintended modifications.
  *
- * The tests cover both successful and failed operations involving game data updates, such as:
- * Cover image URL retrieval and update
- * Updating completion status, notes, title, platform, genre, developer, publisher, and release date
- * Handling invalid input such as empty strings, invalid IDs, and malformed dates or URLs
- * Retrieving lists of platforms and genres from the user's collection
+ * The tests map to various functional test cases in the project’s test plan, validating both
+ * positive and negative paths to confirm correct service behavior under a range of conditions.
+ *
+ * Mockito is used to mock GameDAO, CollectionDAO, and AlertHelper dependencies, isolating
+ * the GameService logic from database and UI components. This allows the tests to focus
+ * solely on the business logic and data validation responsibilities of the service layer.
+ * The goal is to verify that GameService reliably acts as a controlled intermediary between
+ * controllers and DAOs, ensuring proper data handling for user game collections.
  */
 class GameServiceTest {
 

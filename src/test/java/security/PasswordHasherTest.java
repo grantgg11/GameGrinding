@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
  * That password verification works correctly for matching and non-matching inputs
  * That edge cases such as null inputs are handled safely
  */
-
 class PasswordHasherTest { 
 
 	/**

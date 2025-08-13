@@ -20,8 +20,33 @@ import utils.AlertHelper;
 import utils.KeyStorage;
 
 /**
- * Service layer class for managing user authentication, registration, password updates,
- * role checks, and account maintenance in the application.
+ * userService manages all user-related operations in the GameGrinding application,
+ * serving as the service layer between controllers and the data access layer (UserDAO).
+ * 
+ * This class is responsible for:
+ * - User registration with validation for email format, password strength, and
+ *   required security question answers.
+ * - Secure storage of user credentials and security answers using hashing and
+ *   encryption for sensitive fields like passwords and email.
+ * - Authentication of users, including setting and retrieving the currently
+ *   logged-in user's information and role.
+ * - Account management features such as updating usernames, emails, and passwords,
+ *   while enforcing uniqueness checks and validating input.
+ * - Password reset functionality for both authenticated users and users who have
+ *   forgotten their password, using stored security question verification.
+ * - Role checking for access control purposes.
+ * - Logging out the current user and clearing session-related data.
+ * - Providing methods to retrieve user details by ID or email.
+ * 
+ * Key features include:
+ * - Integration with AuthManager for authentication logic.
+ * - Integration with PasswordHasher for secure password handling.
+ * - Integration with Encryption and KeyStorage for email encryption.
+ * - Error reporting to the UI through AlertHelper.
+ * - Centralized storage of the current user's state for consistent session handling.
+ * 
+ * This service ensures that controllers do not directly handle sensitive security
+ * operations or database queries.
  */
 public class userService {
 	

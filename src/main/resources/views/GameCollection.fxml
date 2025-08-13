@@ -1,21 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!--
-    GameCollection.fxml
-    Description:
-    This JavaFX layout file defines the user interface for the Game Collection screen
-    in the GameGrinding application. It enables users to view, search, sort, and manage
-    their personal video game collection. The interface features a sidebar for navigation,
-    a search bar, sorting dropdown, and a scrollable content area that displays game cards.
-    
-    Key UI elements include:
-    - A FlowPane for dynamically displaying game cards
-    - A search bar for title-based filtering
-    - A sort menu for organizing the collection
-    - Navigation buttons to access Help, Settings, and Add Game functionality
--->
-
-
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ChoiceBox?>
@@ -32,6 +16,21 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
+
+<!--
+    GameCollection.fxml
+    Description:
+    This JavaFX layout file defines the user interface for the Game Collection screen
+    in the GameGrinding application. It enables users to view, search, sort, and manage
+    their personal video game collection. The interface features a sidebar for navigation,
+    a search bar, sorting dropdown, and a scrollable content area that displays game cards.
+    
+    Key UI elements include:
+    - A FlowPane for dynamically displaying game cards
+    - A search bar for title-based filtering
+    - A sort menu for organizing the collection
+    - Navigation buttons to access Help, Settings, and Add Game functionality
+-->
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1280.0" xmlns="http://javafx.com/javafx/17.0.13" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.GameCollectionController">
    <children>

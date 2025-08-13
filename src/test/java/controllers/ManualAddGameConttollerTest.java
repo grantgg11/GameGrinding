@@ -29,11 +29,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Unit tests for the ManualAddGameConttoller class.
+ * ManualAddGameConttollerTest contains unit tests for verifying the functionality of the
+ * ManualAddGameConttoller class in the GameGrinding application.
  *
- * This test class verifies the functionality of the ManualAddGameConttoller,
- * including input validation, navigation, and error handling.
- * It uses mock dependencies to isolate the controller's behavior.
+ * This test class ensures that:
+ * - All field getter methods (title, developer, publisher, release date, genre, platform,
+ *   completion status, and notes) correctly return validated and trimmed values, or log
+ *   appropriate error messages when inputs are invalid.
+ * - Image handling methods, including file browsing, placeholder selection, and copying
+ *   cover art to the images directory, work as expected under normal and exceptional conditions.
+ * - Directory resolution logic for storing images respects system overrides, development paths,
+ *   and fallback locations, handling both writable and non-writable scenarios.
+ * - The game creation process through handleSubmit correctly validates input, parses dates,
+ *   handles optional cover art, and returns a constructed game object or appropriate errors.
+ * - The handleSubmitButtonClick workflow integrates validation, persistence via GameCollectionService,
+ *   and navigation via NavigationHelper, while handling failures gracefully.
+ * - Navigation button handlers (Game Collection, Settings, Help, Refresh, Add API, and Logout)
+ *   correctly call NavigationHelper and userService methods, and handle exceptions without
+ *   crashing the application.
+ *
+ * The tests use Mockito to mock dependencies such as NavigationHelper, GameCollectionService,
+ * userService, and AlertHelper, isolating the controller's behavior from external systems.
+ * TestFX and JavaFXThreadingExtension are used to make sure that JavaFX UI components and event
+ * handling run safely in a controlled test environment.
+ * The goal is to confirm that ManualAddGameConttoller reliably manages manual game addition,
+ * user interactions, validation, navigation, and error handling for end users.
  */
 @ExtendWith(JavaFXThreadingExtension.class)
 class ManualAddGameConttollerTest {

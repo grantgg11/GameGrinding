@@ -12,13 +12,23 @@ import com.google.gson.JsonParser;
 
 
 /**
- * Utility class for handling JSON-related operations such as sending HTTP GET requests
- * and parsing JSON strings into JsonObjects using Gson.
+ * JSONParser provides utility methods for handling JSON-related operations in the GameGrinding application.
+ * 
+ * This class is responsible for:
+ * - Sending HTTP GET requests to retrieve JSON data from external APIs, with built-in retry logic
+ *   to handle rate-limiting responses (HTTP 429 Too Many Requests).
+ * - Parsing raw JSON strings into JsonObject instances using Gson for easy data extraction.
+ * - Providing a retry delay helper method to control wait times between retries.
+ * 
+ * Key features:
+ * - Supports up to a configurable number of retries when API rate limits are encountered.
+ * - Uses Java's HttpURLConnection for making HTTP requests.
+ * - Integrates Gson's JsonParser for converting raw JSON into navigable JsonObject structures.
+ * - Centralizes JSON request and parsing logic, reducing repetitive boilerplate code in services
+ *   that interact with APIs.
  */
 public class JSONParser {
-	
-	
-	
+		
     /**
      * Sends a GET request to the specified URL with automatic retry handling in case of HTTP 429 (Too Many Requests) errors.
      *

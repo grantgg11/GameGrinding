@@ -7,6 +7,8 @@ import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 import models.game;
 import services.GameService;
+import services.userService;
+import utils.AlertHelper;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -36,10 +38,14 @@ public class EditGameController extends BaseController {
 	@FXML private Button gameCollectionButton;
 	@FXML private Button settingsButton;
 	@FXML private Button helpButton;
+    @FXML private Button logoutButton;            
 	
 
     private final GameService gameService = new GameService();
     private final NavigationHelper navHelp = new NavigationHelper();
+    private NavigationHelper navHelper = new NavigationHelper();  
+    private userService userSer = new userService();              
+    private AlertHelper alert = new AlertHelper();  
     private game currentGame; 										// The game object being edited
     private File selectedImageFile; 								// File object for the selected image
     private final List<String> errors = new ArrayList<>();			// List to store error messages	
@@ -192,5 +198,20 @@ public class EditGameController extends BaseController {
 
 	}
 
+	/**
+	 * Logs out the user and navigates to the login page.
+	 */
+	@FXML
+	protected void handleLogoutButton() {
+		try{
+			userSer.logout();
+			navHelper.switchToLoginPage(logoutButton);
+			System.out.println("User logged out successfully.");
+			alert.showInfo("Logout Successful", "You have been logged out successfully.", "Thank you for using GameGrinding");
+		} catch (Exception e) {
+			System.err.println("Error during logout: " + e.getMessage());
+			alert.showError("Logout Error", "An error occurred while logging out. Please try again.", e.getMessage());
+		}
+	}
 }
 

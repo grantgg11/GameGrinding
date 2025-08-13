@@ -28,20 +28,36 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
- * Unit tests for the mobyGamesAPIService class.
+ * mobyGamesAPIServiceTest contains unit tests for verifying the functionality of the
+ * mobyGamesAPIService class in the GameGrinding application.
  *
- * This test class verifies:
- * Rate-limiting behavior through enforceRateLimit and simulated interruptions
- * API key loading from resources and fallbacks
- * Behavior of searchGamesByTitles under normal, error, and edge conditions
- * Fetching, parsing, and caching of game and platform data using mocked JSON responses
- * Robustness against IOException, null inputs, malformed JSON, and duplicate entries
- * Correct logging and alert triggering during failures
+ * This test class ensures that:
+ * - API rate limiting logic (enforceRateLimit) executes without exceptions under normal conditions,
+ *   and gracefully handles interruptions without breaking downstream workflows.
+ * - API key loading from local resources works correctly, returns valid keys with expected prefixes,
+ *   and handles null or missing InputStream scenarios without errors.
+ * - The searchGamesByTitles method correctly sends API requests, parses JSON responses, maps game data
+ *   into model objects, filters duplicate IDs, handles null or malformed responses, and suppresses alerts
+ *   during failures such as IOExceptions.
+ * - fetchGameDetails retrieves and parses game data from cache or API calls, integrates platform data,
+ *   handles null and invalid responses gracefully, and tolerates exceptions from dependent methods without crashing.
+ * - parseGame correctly populates game objects from minimal and fully populated JSON data, applying defaults for
+ *   missing fields, parsing dates in multiple formats (including year-only), handling invalid date formats safely,
+ *   and extracting genre, developer, publisher, platform, and cover image data accurately.
+ * - fetchGamePlatforms retrieves platform details from the API, filters out null or invalid entries, integrates
+ *   data from fetchPlatformDetails, handles missing "platforms" keys, and gracefully processes IOExceptions by
+ *   showing appropriate error alerts.
+ * - fetchPlatformDetails retrieves developer and publisher data from the API, uses caching to avoid redundant calls,
+ *   defaults to "Unknown" when data is missing, and handles IOExceptions by displaying alerts and returning null.
  *
- * Mocks and static mocking are used extensively for JSONParser, userService,
- * and AlertHelper to simulate real-world API and service behavior.
+ * The tests map to functional and non-functional requirements in the test plan by validating both success and
+ * failure scenarios for each public method. Edge cases such as null input, empty strings, malformed JSON, duplicate
+ * records, and missing fields are thoroughly tested to ensure robustness.
+ *
+ * Mockito and static mocking (MockedStatic) are used extensively to mock dependencies such as JSONParser,
+ * userService, and AlertHelper. This isolates API service logic from real network calls, external APIs,
+ * and UI components.
  */
-
 class mobyGamesAPIServiceTest {
 
     private final String mockJson = "{\"games\":[{\"game_id\":1,\"title\":\"Test Game\"}]}";

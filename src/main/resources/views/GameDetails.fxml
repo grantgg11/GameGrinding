@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- 
-        This JavaFX layout file defines the user interface for the Game Details screen in the application.
-        It displays detailed information about a specific game, including its title, developer, publisher,
-        release date, genre, platform(s), and completion status. The layout features a styled sidebar,
-        header area, and buttons for editing and deleting the game details.
- -->
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ChoiceBox?>
@@ -23,6 +17,35 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
+<!--
+    GameDetails.fxml defines the JavaFX layout for the "Game Details" screen 
+    in the GameGrinding application.
+
+    Purpose:
+    Displays information about a selected game, including:
+    - Title
+    - Developer
+    - Publisher
+    - Release date
+    - Genre
+    - Platform(s)
+    - Completion status
+    - User notes
+    - Cover art image
+
+    Key Components:
+    - Labels bound to game properties for detailed display.
+    - Editable fields:
+        * Completion Status (ChoiceBox)
+        * Notes (TextArea) with Save Notes button (saveNotes).
+    - ImageView for displaying the game's cover art.
+    - Edit button (handleEditButton) for modifying game details.
+    - Delete button (clickDeleteButton) for removing the game from the collection.
+    - Back button (handleBackButton) for navigation.
+    - Sidebar navigation buttons for Game Collection, Settings, Help, and Logout.
+    - Themed styling with rectangles, shadows, and images for a consistent branded UI.
+-->
+
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1280.0" xmlns="http://javafx.com/javafx/17.0.13" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.GameDetailsController">
    <children>
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#faf3f3" height="642.0" layoutX="135.0" layoutY="130.0" stroke="BLACK" strokeType="INSIDE" width="1098.0">
@@ -37,7 +60,7 @@
          <cursor>
             <Cursor fx:constant="DEFAULT" />
          </cursor></Rectangle>
-      <Rectangle arcHeight="25.0" arcWidth="15.0" fill="#43474a" height="788.0" stroke="WHITE" strokeType="INSIDE" strokeWidth="2.0" width="181.0" />
+      <Rectangle arcHeight="25.0" arcWidth="15.0" fill="#43474a" height="794.0" stroke="WHITE" strokeType="INSIDE" strokeWidth="2.0" width="181.0" />
       <Rectangle arcHeight="15.0" arcWidth="20.0" fill="#e1e1e1" height="86.0" layoutX="182.0" stroke="#b5b5b5" strokeType="INSIDE" strokeWidth="2.0" width="1098.0">
          <effect>
             <DropShadow />

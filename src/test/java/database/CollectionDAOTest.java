@@ -27,13 +27,44 @@ import org.junit.jupiter.api.Test;
 import models.game;
 
 /**
- * Unit tests for the CollectionDAO class using JUnit 5 and Mockito.
- * This test class validates all public methods including:
- *     Adding games to the user's collection
- *     Removing games from the user's collection
- *     Searching, filtering, and sorting games
- *     Checking existence of games in the database or user collection
- *     Retrieving metadata like platforms and genres
+ * CollectionDAOTest contains unit tests for verifying the data-access behavior of
+ * the CollectionDAO class in the GameGrinding application.
+ *
+ * This test class ensures that:
+ * - Construction and connections:
+ *   - The default constructor initializes a live JDBC connection.
+ *   - A DAO built with a provided Connection uses it for all operations.
+ * - Adding games:
+ *   - addGameToCollection correctly inserts manual/API games, links them to the user,
+ *     commits on success, and short-circuits when the user already owns the game.
+ *   - Failure paths are handled (missing generated keys, SQL exceptions) without crashes.
+ * - Removing games:
+ *   - removeGameFromCollection deletes from UserGameCollection and Game in a transaction,
+ *     commits on success, and rolls back on inner failures; setup errors prevent commit.
+ *   - Partial deletions (no game row removed) return false.
+ * - Lookups and reads:
+ *   - getGameID returns whether a matching title exists for a user and handles SQL errors.
+ *   - getAllGamesInCollection returns populated game models, parsing ISO dates, and safely
+ *     handles invalid/empty/null dates by setting releaseDate to null.
+ *   - searchCollection finds matches with wildcards, and tolerates invalid/empty dates
+ *     or SQL exceptions by returning an empty list.
+ *   - sortCollection orders results by supported fields (e.g., Title, Release Date, Platform),
+ *     supports optional search queries, and returns empty lists for unknown options or errors.
+ * - Metadata helpers:
+ *   - getCollectionPlatform / getCollectionGenres return distinct values with or without filters,
+ *     and degrade gracefully (empty list) on no results or SQL exceptions.
+ * - Filtering:
+ *   - filterCollection applies genre/platform/status filters, parses valid dates, and
+ *     treats invalid/empty dates as null; SQL errors yield empty lists.
+ * - Existence checks:
+ *   - gameExists and userAlreadyHasGame return true/false based on query results and
+ *     handle SQL failures by returning false.
+ *
+ * The tests use JUnit 5 and Mockito with spies/mocks for Connection/PreparedStatement/ResultSet
+ * to validate SQL parameter binding, transaction control (setAutoCommit/commit/rollback),
+ * and method outcomes. A shared test connection via DatabaseManager test mode is used for
+ * limited constructor verification. The goal is to confirm CollectionDAO’s correctness,
+ * robustness, and graceful error handling across CRUD, search/sort/filter, and metadata paths.
  */
 class CollectionDAOTest {
 

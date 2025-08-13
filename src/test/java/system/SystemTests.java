@@ -54,11 +54,26 @@ import database.CollectionDAO;
 import database.UserDAO;
 
 /**
- * System tests for GameGrinding application.
- * 
- * Verifies full-stack integration of features such as manual game addition, API-based game addition,
- * sorting, filtering, searching, account settings updates, password resets, and user registration.
- * Utilizes JavaFX UI with TestFX and service/database layer coordination.
+ * SystemTests contains end-to-end JavaFX UI tests for verifying full integration of the
+ * GameGrinding application across its presentation, service, and database layers.
+ *
+ * This suite validates that key user workflows execute successfully through the actual UI,
+ * including:
+ * - Adding games manually (ST-01) and via the MobyGames API (ST-02), with verification that
+ *   added games appear correctly in the user's collection.
+ * - Navigating from API search results to a game's detail view and back without losing state (ST-03).
+ * - Filtering (ST-04) and searching (ST-05) the collection, ensuring only matching games are shown.
+ * - Sorting the collection by release date (ST-06), title (ST-07), and platform (ST-08) in the expected order.
+ * - Updating account details from the Settings page (ST-09) and resetting passwords (ST-10),
+ *   verifying encryption and authentication.
+ * - Registering new user accounts (ST-11) and completing the full forgot password flow with login (ST-12).
+ * - Editing (ST-13) and deleting (ST-14) games from the collection, confirming changes in the UI.
+ * - Navigating to Help topics and returning to the collection view (ST-15).
+ *
+ * The tests use TestFX for simulating user interactions, JavaFX for UI rendering,
+ * and the real service/database implementations to ensure complete workflow coverage.
+ * Each test performs setup, UI actions, and assertions, with @BeforeEach and @AfterEach
+ * hooks cleaning up users, games, and UI state to maintain isolation and repeatability.
  */
 @ExtendWith(ApplicationExtension.class)
 public class SystemTests {

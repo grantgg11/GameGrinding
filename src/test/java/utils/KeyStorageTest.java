@@ -13,12 +13,22 @@ import org.junit.jupiter.api.parallel.ResourceLock;
 import static org.junit.jupiter.api.parallel.Resources.SYSTEM_PROPERTIES;
 
 /**
- * Unit tests for the KeyStorage utility class.
- * 
- * These tests verify encryption key creation, persistence, loading, and error handling.
- * A temporary home directory is used to isolate file I/O, ensuring no interaction
- * with the real user environment. System properties are locked to prevent race
- * conditions when tests run in parallel.
+ * KeyStorageTest verifies the functionality of the KeyStorage utility class, focusing on encryption key creation, storage, loading,
+ * and error handling.
+ *
+ * Tests cover:
+ * - Generating a new AES key when none exists and persisting it in Base64 format.
+ * - Returning the same key on subsequent getEncryptionKey calls without overwriting.
+ * - Storing keys with automatic parent directory creation.
+ * - Loading stored keys and verifying byte equality with the original.
+ * - Throwing appropriate exceptions for missing or corrupt key files.
+ *
+ * File I/O is isolated using a temporary home directory with overridden system
+ * properties, ensuring no interaction with real user data. SYSTEM_PROPERTIES
+ * resource locking prevents race conditions in parallel tests.
+ *
+ * Lifecycle methods set up the test environment, clean up files after each test,
+ * and restore original system properties afterward.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ResourceLock(SYSTEM_PROPERTIES) 

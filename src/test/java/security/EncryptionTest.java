@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Test;
  *
  * All tests are executed using a valid SecretKey generated before each test.
  */
-
 class EncryptionTest {
 	
 	private SecretKey secretKey;

@@ -45,8 +45,8 @@ import services.userService;
 *     Navigation to related pages (Filter, Settings, Help, Logout)
 *     Handling errors gracefully during runtime
 *
-* Dependencies such as {@code GameCollectionService}, {@code NavigationHelper}, and
-* {@code PerformanceTracker} are mocked to isolate controller logic.
+* Dependencies such as GameCollectionService, NavigationHelper, and
+* PerformanceTracker are mocked to isolate controller logic.
 * JavaFX fields are injected via reflection for complete behavioral coverage.
 */
 @ExtendWith({ApplicationExtension.class, JavaFXThreadingExtension.class})

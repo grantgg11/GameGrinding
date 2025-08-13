@@ -23,10 +23,23 @@ import services.userService;
 import utils.AlertHelper;
 
 /**
- * Unit tests for the HelpController class in the GameGrinding application.
- *
- * This test class validates the HelpController's functionality, including navigation,
- * accordion behavior, and user interaction handling.
+ * HelpControllerTest contains unit tests for verifying the behavior of the HelpController
+ * class in the GameGrinding application.
+ * 
+ * This test class focuses on:
+ * - Validating that navigation actions (Game Collection, Settings, Refresh, Logout) correctly
+ *   call the NavigationHelper methods and handle exceptions gracefully.
+ * - Confirming that the Help page’s Accordion component is initialized correctly with help topics
+ *   and that the correct pane is expanded by default.
+ * - Ensuring that stylesheet application to the Accordion does not cause runtime errors.
+ * - Testing logging output for certain controller methods, such as user data loading.
+ * - Verifying that user interactions, such as logging out, trigger the correct calls to
+ *   userService and AlertHelper.
+ * 
+ * Key features of these tests:
+ * - Use of Mockito to mock dependencies including NavigationHelper, userService, and AlertHelper.
+ * - Use of TestFX and JavaFXThreadingExtension to run JavaFX UI-related code safely in tests.
+ * - Verification of both expected behavior and proper handling of simulated exceptions.
  */
 @ExtendWith({ApplicationExtension.class, JavaFXThreadingExtension.class})
 class HelpControllerTest {

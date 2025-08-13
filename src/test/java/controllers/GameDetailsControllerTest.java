@@ -234,7 +234,7 @@ class GameDetailsControllerTest {
         when(mockGame.getReleaseDate()).thenReturn(LocalDate.of(2020, 1, 1));
         when(mockGame.getGenre()).thenReturn("RPG");
         when(mockGame.getPlatform()).thenReturn("PC");
-        when(mockGame.getCompletionStatus()).thenReturn("Completed"); // not shown by controller
+        when(mockGame.getCompletionStatus()).thenReturn("Completed"); 
         when(mockGame.getNotes()).thenReturn("Some notes.");
         when(mockGame.getCoverImageUrl()).thenReturn(null); // triggers placeholder
 
@@ -246,7 +246,7 @@ class GameDetailsControllerTest {
         assertEquals("Test Game", gameTitle.getText());
         assertEquals("Developer(s): Test Dev", developerLabel.getText());
         assertEquals("Publisher(s): Test Pub", publisherLabel.getText());
-        assertEquals("Release Date: 2020-01-01", releaseDateLabel.getText()); // adjust if you format dates differently
+        assertEquals("Release Date: 2020-01-01", releaseDateLabel.getText()); 
         assertEquals("Genre(s): RPG", genreLabel.getText());
         assertEquals("Platform(s): PC", platformLabel.getText());
         assertEquals("Some notes.", notesTextArea.getText());

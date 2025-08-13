@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
  * Normalization handling (e.g., trimming, case insensitivity)
  * Edge cases such as empty or null input strings
  */
-
 class HasherTest { 
 
 	private Hasher hasher;

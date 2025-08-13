@@ -17,11 +17,43 @@ import services.userService.PasswordUpdateResult;
 
  
 /**
- * Test class for userService.
- * This suite validates user registration, authentication, role access, email and password validation,
- * account updates, and password management features. 
- * These tests cover requirements and use case includes TC-1 (Login), TC-2 (Register), TC-14 (Edit Profile),
- * TC-20 (Error Handling), TC-26 (Invalid Login Attempt), TC-27 (Password Strength Enforcement), TC-30 (Admin Role Access Restriction).
+ * userServiceTest contains unit tests for verifying the functionality of the
+ * userService class in the GameGrinding application.
+ *
+ * This test class ensures that:
+ * - User registration (registerUser) enforces unique emails and usernames, validates email format,
+ *   applies password strength rules, and prevents invalid data from reaching the UserDAO.
+ * - Authentication (authenticateUser) correctly validates credentials, updates the current user session,
+ *   and handles null, empty, or invalid input without crashing.
+ * - Role retrieval (getCurrentUserRole) correctly returns the user’s role from memory or database,
+ *   defaults to "guest" for invalid sessions, and supports admin/user role access control logic.
+ * - Validation helpers (isPasswordStrong, isEmailValid) accurately enforce password complexity
+ *   and proper email formatting, rejecting weak or improperly formatted inputs.
+ * - Account updates (updateAccount) validate email uniqueness and format, perform database updates
+ *   through UserDAO, and gracefully handle failures or exceptions.
+ * - Password management methods:
+ *   • updatePassword enforces verification of the current password, validates the new password,
+ *     and persists the updated password hash to the database.
+ *   • updateForgottenPassword securely hashes new passwords before storage, verifies hashes match
+ *     the original input, and handles DAO failures or exceptions.
+ * - User retrieval methods (getUserByID, getUserByEmail) return correct data when available,
+ *   and handle missing or invalid inputs by returning null without throwing exceptions.
+ * - Security question verification (verifySecurityAnswers) validates hashed answers against stored values,
+ *   returns true only for full matches, and handles user-not-found or exception scenarios safely.
+ *
+ * The tests map to multiple functional and non-functional requirements from the test plan, including:
+ * - TC-1 (Login)
+ * - TC-2 (Register)
+ * - TC-14 (Edit Profile)
+ * - TC-20 (Error Handling)
+ * - TC-26 (Invalid Login Attempt)
+ * - TC-27 (Password Strength Enforcement / Security – Password Storage)
+ * - TC-30 (Admin Role Access Restriction)
+ *
+ * Mockito is used to mock dependencies such as UserDAO, AuthManager, and AlertHelper, isolating
+ * the service logic from database and UI components. PasswordHasher is used to verify secure
+ * password storage and validation. The goal is to confirm that userService reliably enforces
+ * security, validation, and business rules for user account management while handling errors gracefully.
  */
 public class userServiceTest {
 
@@ -419,7 +451,7 @@ public class userServiceTest {
         String email = "existing@example.com";
         int userID = 1;
         String username = "newUsername";
-        when(mockUserDAO.getUserByEmail(anyString())).thenReturn(new user()); // email already exists
+        when(mockUserDAO.getUserByEmail(anyString())).thenReturn(new user()); 
         boolean result = userServiceUnderTest.updateAccount(userID, username, email);
         assertFalse(result, "Update should fail if email already exists.");
     }

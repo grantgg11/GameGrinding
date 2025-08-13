@@ -8,11 +8,24 @@ import javax.crypto.spec.SecretKeySpec;
 import security.Encryption;
 
 /**
- * Utility class for securely managing the AES encryption key used by the application.
+ * KeyStorage is a utility class responsible for securely managing the AES encryption key
+ * used by the GameGrinding application.
  * 
- * The key is stored as a Base64-encoded file on disk and can be retrieved, stored, 
- * or generated if missing. Optional system properties allow overriding the storage 
- * location, which is useful for testing or CI environments.
+ * This class handles:
+ * - Determining the storage location for the AES key, with support for customizable
+ *   paths via system properties for flexibility in testing or CI environments.
+ * - Creating a new AES key if one does not already exist and storing it securely on disk.
+ * - Loading an existing AES key from disk for use in encryption and decryption operations.
+ * - Ensuring the key is stored in Base64-encoded format to maintain safe and consistent
+ *   storage across different environments.
+ * 
+ * Key features:
+ * - Default key storage location is the user's home directory under `.gamegrinding/encryption.key`,
+ *   but this can be overridden using system properties.
+ * - Ensures parent directories exist and attempts to set hidden attributes for improved
+ *   security on Windows systems.
+ * - Automatically generates and stores a new AES key if the key file is missing.
+ * - Uses Java’s SecretKeySpec to reconstruct the AES key from stored Base64-encoded data.
  */
 public class KeyStorage {
 

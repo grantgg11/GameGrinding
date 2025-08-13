@@ -14,10 +14,16 @@ import database.CollectionDAO;
 import models.game;
 
 /**
- * Performance test suite for validating that the application can handle large game collections (up to 5,000 games) efficiently.
- * These tests help verify non-functional requirement US-3:
- * The application must perform loading, searching, and sorting actions on a 5,000 game collection in under 3 seconds.
- */ 
+ * LoadTest validates non-functional requirement US-3: the app handles a 5,000-game
+ * collection efficiently (under 3 seconds).
+ *
+ * It uses an in-memory SQLite DB and CollectionDAO to measure:
+ * - Loading all games (expect < 3s and size == 5000).
+ * - Searching by title (expect < 3s and non-empty results).
+ * - Sorting by title (expect < 3s, size == 5000, and correct first/last order).
+ *
+ * These tests assert both performance and correctness without external dependencies.
+ */
 class LoadTest {
 
 	/**

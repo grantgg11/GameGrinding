@@ -10,8 +10,24 @@ import database.CollectionDAO;
 import database.GameDAO;
 
 /**
- * Service class for managing individual game metadata and field updates in a user's collection.
- * Also provides utilities for retrieving and processing platform and genre data from a user's games.
+ * GameService acts as an intermediary layer between the application's controllers and
+ * the database DAO classes for managing game-related data in a user's collection.
+ * 
+ * This class handles:
+ * - Retrieving and updating individual game fields such as title, developer, publisher,
+ *   genre, platform, release date, cover image URL, completion status, and notes.
+ * - Ensuring data updates are passed to the correct DAO method while providing basic
+ *   validation for certain fields like completion status.
+ * - Retrieving platform and genre data from the user's game collection, removing duplicates,
+ *   and returning sorted lists for UI display or filtering.
+ * 
+ * GameService works with two main DAO classes:
+ * - GameDAO: Handles updates and queries for individual game records.
+ * - CollectionDAO: Handles retrieval of broader collection data, such as all platforms
+ *   or genres owned by the user.
+ * 
+ * This separation of responsibilities ensures that the controller layer does not interact
+ * directly with the database and allows for easier testing, maintenance, and future feature expansion.
  */
 public class GameService {
 
